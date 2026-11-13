@@ -1,0 +1,6 @@
+# Content pulled from the old Webflow site; not needed to run the site
+source/
+
+node_modules/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1992 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marek Heiland — Product Designer &amp; Illustrator</title>
+<meta name="description" content="Marek Heiland is a product designer and illustrator in Sydney. Case studies from AXIS and MTRIBES, and digital illustrations.">
+<link rel="icon" type="image/png" href="img/Favicon.png">
+<link rel="apple-touch-icon" href="img/Webclip.png">
+<meta name="theme-color" content="#0b0c0d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300..800;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<script>
+  // A/B variations are read before first paint, so variant B's landing can hide the hero
+  // without a flash of the finished page.
+  (function () {
+    var v = {}; try { v = JSON.parse(localStorage.getItem('mh-variants') || '{}'); } catch (e) {}
+    window.__variants = v;
+    var home = !location.hash || location.hash === '#/' || location.hash === '#';
+    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (v.landing === 'B' && home && !still) document.documentElement.classList.add('intro-b');
+    if (v.scroll === 'B' && !still) document.documentElement.classList.add('gl-b');
+    if (v.scroll === 'C' && !still) document.documentElement.classList.add('gl-c');
+  })();
+</script>
+<style>
+/* ---------- Tokens ---------- */
+:root {
+  --bg: #0b0c0d;
+  --bg-2: #121416;
+  --bg-3: #1a1d20;
+  --line: #262a2e;
+  --text: #eceeef;
+  --text-2: #a6acb2;
+  --text-3: #6f767d;
+  --accent: #ffce3c;          /* the old site's yellow accent, kept */
+  --accent-ink: #1a1400;
+  --chip: #e9ecee;            /* light tile behind the dark line icons */
+  --shadow: 0 30px 80px -30px rgba(0,0,0,.7);
+  --radius: 14px;
+  --radius-lg: 22px;
+  --k: 1;                     /* animation time scale, set by the A/B panel's speed field */
+  --maxw: 1240px;
+  --prose: 680px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --font: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  --bg: #f6f5f2;
+  --bg-2: #ecebe6;
+  --bg-3: #e2e0da;
+  --line: #d6d3cc;
+  --text: #121314;
+  --text-2: #4c5157;
+  --text-3: #80868c;
+  --accent: #f5bc1a;
+  --accent-ink: #1a1400;
+  --chip: #ffffff;
+  --shadow: 0 30px 70px -35px rgba(30,30,20,.35);
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 400 17px/1.6 var(--font); letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  transition: background-color .3s, color .3s;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--accent); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+.wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+.mono, .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; }
+.eyebrow { color: var(--text-3); display: inline-flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--accent); border-radius: 2px; }
+.muted { color: var(--text-2); }
+.skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--accent); color: var(--accent-ink); padding: 8px 14px; border-radius: 8px; }
+.skip:focus { left: 8px; }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  transition: background-color .3s, border-color .3s, backdrop-filter .3s;
+  border-bottom: 1px solid transparent;
+}
+.site-header.solid {
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom-color: var(--line);
+}
+.site-header .wrap { display: flex; align-items: center; gap: 24px; height: 68px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; letter-spacing: -0.02em; font-size: 17px; }
+/* The original MH logo, used as a mask so it takes the text colour in either theme. */
+.brand-logo { width: 23px; height: 32px; flex: none; background: currentColor;
+  -webkit-mask: url(img/LOGO_2.png) center / contain no-repeat; mask: url(img/LOGO_2.png) center / contain no-repeat; transition: background-color .2s; }
+.brand:hover .brand-logo { background: var(--accent); }
+.nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.nav a { text-decoration: none; padding: 8px 14px; border-radius: 999px; font-size: 15px; color: var(--text-2); transition: color .2s, background-color .2s; }
+.nav a:hover { color: var(--text); background: var(--bg-3); }
+.nav a[aria-current='page'] { color: var(--text); }
+.nav a[aria-current='page']::after { content: ''; display: block; height: 2px; margin-top: 2px; background: var(--accent); border-radius: 2px; }
+.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; transition: background-color .2s; }
+.icon-btn:hover { background: var(--bg-3); }
+.icon-btn svg { width: 18px; height: 18px; }
+.menu-btn { display: none; }
+/* Over the home hero the header sits on a dark image, whatever the theme. */
+body.on-hero .site-header:not(.solid) { color: #fff; }
+body.on-hero .site-header:not(.solid) .nav a { color: rgba(255,255,255,.78); }
+body.on-hero .site-header:not(.solid) .nav a:hover { background: rgba(255,255,255,.12); color: #fff; }
+body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255,.3); color: #fff; }
+
+@media (max-width: 760px) {
+  .menu-btn { display: grid; margin-left: auto; }
+  .nav { position: fixed; inset: 68px 0 auto; flex-direction: column; align-items: stretch; gap: 0; padding: 8px var(--gutter) 20px;
+    background: var(--bg); border-bottom: 1px solid var(--line); transform: translateY(-8px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+  .nav.open { opacity: 1; transform: none; pointer-events: auto; }
+  .nav a { padding: 14px 4px; font-size: 18px; border-radius: 0; border-bottom: 1px solid var(--line); color: var(--text) !important; }
+  .nav a[aria-current='page']::after { display: none; }
+  .nav a[aria-current='page'] { color: var(--accent) !important; }
+  .nav .icon-btn { margin-top: 14px; }
+  body.on-hero .site-header:not(.solid) .nav .icon-btn { color: var(--text); border-color: var(--line); }
+}
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 999px; font: 500 15px/1 var(--font);
+  text-decoration: none; border: 1px solid var(--line); background: var(--bg-2); color: var(--text); transition: transform .2s, background-color .2s, border-color .2s; }
+.btn:hover { border-color: var(--text-3); transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn svg { width: 17px; height: 17px; }
+.btn.glass { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.22); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.btn.glass:hover { background: rgba(255,255,255,.18); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.arrow-link { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; text-decoration: none; }
+.arrow-link svg { width: 16px; height: 16px; transition: transform .2s; }
+.arrow-link:hover svg { transform: translateX(4px); }
+
+/* ---------- Routes ---------- */
+[data-route] { display: none; }
+[data-route].active { display: block; animation: page-in .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity calc(.8s * var(--k)) cubic-bezier(.2,.7,.2,1), transform calc(.8s * var(--k)) cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  [data-route].active { animation: none; }
+}
+
+/* ---------- Home hero ---------- */
+.hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; color: #fff; overflow: hidden; background: #0b0c0d; }
+.hero-slides { position: absolute; inset: 0; }
+.hero-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06);
+  transition: opacity 1.6s ease, transform 9s linear; }
+.hero-slides img.on { opacity: 1; transform: scale(1); }
+.hero::after { content: ''; position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 70%),
+    linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,.15) 45%, rgba(0,0,0,.85) 100%); }
+.hero-content { position: relative; z-index: 2; padding-bottom: clamp(40px, 8vh, 96px); padding-top: 120px; }
+.hero h1 { font-size: clamp(48px, 9vw, 128px); font-weight: 650; letter-spacing: -0.045em; line-height: .92; margin: 18px 0 26px; }
+.hero h1 span { color: var(--accent); }
+.hero .eyebrow { color: rgba(255,255,255,.7); }
+.hero-intro { max-width: 620px; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: rgba(255,255,255,.86); margin-bottom: 30px; }
+.hero-intro p + p { margin-top: 10px; }
+.hero-foot { position: absolute; z-index: 2; right: var(--gutter); bottom: clamp(40px, 8vh, 96px); display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,.7); }
+.hero-dots { display: flex; gap: 6px; }
+.hero-dots button { width: 26px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: rgba(255,255,255,.3); cursor: pointer; }
+.hero-dots button.on { background: var(--accent); }
+.hero-dots button::before { content: ''; display: block; height: 20px; margin-top: -9px; }
+/* Tablets and phones: copy and stepper stack. The copy takes the full width and the stepper
+   sits on its own row underneath, behind a faint rule: label left, dots right. */
+@media (max-width: 900px) {
+  .hero { flex-direction: column; justify-content: flex-end; align-items: stretch; }
+  .hero-content { padding-bottom: 28px; }
+  .hero-foot { position: relative; right: auto; bottom: auto; width: 100%; max-width: var(--maxw); margin: 0 auto;
+    padding: 16px var(--gutter) 28px; justify-content: space-between; }
+  .hero-foot::before { content: ''; position: absolute; top: 0; left: var(--gutter); right: var(--gutter); height: 1px; background: rgba(255,255,255,.18); }
+}
+/* Phones: a bigger two-line heading, and the buttons as a full-width primary over an even row of three. */
+@media (max-width: 600px) {
+  .hero h1 { font-size: 17vw; margin: 14px 0 20px; }
+  .hero .eyebrow { font-size: 11px; letter-spacing: .05em; }
+  .hero-intro { margin-bottom: 24px; }
+  .hero .btn-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .hero .btn-row .btn { justify-content: center; padding: 0 10px; }
+  .hero .btn-row .btn.primary { grid-column: 1 / -1; }
+}
+
+/* ---------- Sections ---------- */
+.section { padding: 80px 0 clamp(72px, 11vw, 140px); }
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: clamp(32px, 5vw, 56px); }
+.section-head h2 { font-size: clamp(34px, 5vw, 60px); margin-top: 14px; }
+.section-head p { max-width: 460px; color: var(--text-2); }
+.alt { background: var(--bg-2); }
+
+/* Work cards */
+.work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(16px, 2vw, 24px); }
+.work-card { grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; gap: 18px; }
+.work-card.wide { grid-column: span 12; }
+.work-card .media { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); aspect-ratio: 16 / 10; }
+.work-card.wide .media { aspect-ratio: 21 / 9; }
+.work-card .media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.work-card .media.device { background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--accent) 22%, var(--bg-3)) 0%, var(--bg-3) 60%); }
+.work-card .media.device img { object-fit: contain; padding: 7% 9% 0; object-position: bottom; }
+.work-card:hover .media img { transform: scale(1.035); }
+.work-card .meta { display: flex; justify-content: space-between; gap: 20px; align-items: start; }
+.work-card h3 { font-size: clamp(22px, 2.4vw, 30px); }
+.work-card p { color: var(--text-2); margin-top: 8px; max-width: 520px; }
+.work-card .tag { flex: none; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--text-2); }
+.work-card .go { width: 46px; height: 46px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center;
+  position: absolute; right: 18px; bottom: 18px; transform: scale(.6); opacity: 0; transition: transform .3s, opacity .3s; }
+.work-card:hover .go, .work-card:focus-visible .go { transform: none; opacity: 1; }
+.work-card .go svg { width: 20px; height: 20px; }
+@media (max-width: 760px) { .work-card, .work-card.wide { grid-column: span 12; } .work-card.wide .media { aspect-ratio: 16 / 10; } }
+
+/* Experience rows */
+.exp { display: grid; gap: clamp(56px, 8vw, 110px); }
+.exp-row { display: grid; grid-template-columns: 1fr 1.25fr; gap: clamp(28px, 5vw, 80px); align-items: center; }
+.exp-row:nth-child(even) .exp-media { order: -1; }
+.exp-row h3 { font-size: clamp(24px, 2.8vw, 36px); margin: 14px 0 16px; }
+.exp-row p { color: var(--text-2); }
+.exp-media { border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); }
+.exp-media img { width: 100%; }
+@media (max-width: 860px) { .exp-row { grid-template-columns: 1fr; } .exp-row:nth-child(even) .exp-media { order: 0; } }
+
+/* Illustration strip on home */
+.strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 38%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 0 var(--gutter) 12px; scrollbar-width: thin; }
+.strip a { scroll-snap-align: start; border-radius: var(--radius); overflow: hidden; display: block; aspect-ratio: 2.65 / 1; background: var(--bg-3); }
+.strip img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s; }
+.strip a:hover img { transform: scale(1.04); }
+@media (max-width: 760px) { .strip { grid-auto-columns: 82%; } }
+
+/* About */
+.about { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 96px); }
+.about h2 { font-size: clamp(34px, 5vw, 60px); margin: 14px 0 28px; }
+.about .bio { font-size: 19px; color: var(--text-2); }
+.about .bio p + p { margin-top: 16px; }
+.resp { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.resp li { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+.resp li::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); flex: none; }
+@media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
+
+/* Contact */
+.contact { padding: clamp(80px, 12vw, 160px) 0; text-align: center; position: relative; overflow: hidden; border-top: 1px solid var(--line); }
+.contact h2 { font-size: clamp(44px, 8vw, 104px); letter-spacing: -0.045em; line-height: .95; }
+.contact h2 span { color: var(--accent); }
+.contact p { max-width: 560px; margin: 24px auto 34px; color: var(--text-2); font-size: 18px; }
+.contact .btn-row { justify-content: center; }
+.site-footer { border-top: 1px solid var(--line); padding: 26px 0; color: var(--text-3); }
+.site-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Case studies ---------- */
+.case-hero { padding: 140px 0 clamp(36px, 5vw, 56px); }
+.case-hero h1 { font-size: clamp(42px, 7vw, 92px); letter-spacing: -0.04em; margin: 18px 0 26px; max-width: 14ch; }
+.case-hero .lede { font-size: clamp(18px, 1.8vw, 22px); line-height: 1.55; color: var(--text-2); max-width: 760px; }
+.facts { display: flex; flex-wrap: wrap; gap: 12px 40px; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--line); }
+.facts div { display: grid; gap: 4px; }
+.facts dt { font: 12.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.facts dd { margin: 0; font-weight: 500; }
+.cover { border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); box-shadow: var(--shadow); }
+.cover img { width: 100%; }
+.cover.tall img { aspect-ratio: 21 / 9; object-fit: cover; }
+
+.case-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); padding-top: clamp(56px, 8vw, 100px); padding-bottom: clamp(56px, 8vw, 100px); }
+.toc { position: sticky; top: 100px; align-self: start; display: grid; gap: 2px; font-size: 14px; }
+.toc .eyebrow { margin-bottom: 10px; }
+.toc a { text-decoration: none; color: var(--text-3); padding: 5px 0 5px 14px; border-left: 2px solid var(--line); transition: color .2s, border-color .2s; }
+.toc a:hover { color: var(--text); }
+.toc a.on { color: var(--text); border-left-color: var(--accent); }
+@media (max-width: 960px) { .case-body { grid-template-columns: minmax(0, 1fr); } .toc { display: none; } }
+
+.prose { max-width: 860px; }
+.prose > section { scroll-margin-top: 96px; }
+.prose > section + section { margin-top: clamp(64px, 9vw, 112px); }
+.prose h2 { font-size: clamp(28px, 3.4vw, 42px); margin: 14px 0 22px; }
+.prose h3 { font-size: 21px; letter-spacing: -0.015em; margin: 36px 0 10px; }
+.prose p, .prose ul, .prose ol { max-width: var(--prose); color: var(--text-2); }
+.prose p + p { margin-top: 14px; }
+.prose strong { color: var(--text); font-weight: 600; }
+.prose ul { padding-left: 0; list-style: none; margin: 18px 0 0; display: grid; gap: 10px; }
+.prose ul li { position: relative; padding-left: 24px; }
+.prose ul li::before { content: ''; position: absolute; left: 2px; top: .7em; width: 8px; height: 2px; background: var(--accent); }
+.prose figure { margin: 36px 0 0; }
+.prose figure img { border-radius: var(--radius); background: var(--bg-3); width: 100%; }
+.prose figcaption { margin-top: 12px; font-size: 14px; color: var(--text-3); }
+.prose figure.bleed { margin-left: calc(-1 * clamp(0px, 4vw, 60px)); margin-right: calc(-1 * clamp(0px, 4vw, 60px)); }
+.figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 36px; }
+.figs figure { margin: 0; }
+@media (max-width: 640px) { .figs { grid-template-columns: 1fr; } }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 30px; max-width: none !important; }
+.card { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+.card h3, .card h4 { margin: 0 0 10px; font-size: 19px; letter-spacing: -0.015em; }
+.card p, .card ul { color: var(--text-2); font-size: 15.5px; }
+.card ul { margin-top: 6px; }
+.card .num { font: 500 13px var(--mono); color: var(--accent); display: block; margin-bottom: 18px; }
+.card .ico { width: 52px; height: 52px; border-radius: 12px; background: var(--chip); display: grid; place-items: center; margin-bottom: 18px; }
+.card .ico img { width: 30px; height: 30px; }
+.card img.thumb { border-radius: 10px; margin: -6px -6px 18px; width: calc(100% + 12px); max-width: none; }
+
+.quote { border-left: 2px solid var(--accent); padding: 4px 0 4px 20px; margin-top: 18px; }
+.quote strong { display: block; color: var(--text); font-weight: 500; margin-bottom: 6px; }
+.quote span { color: var(--text-2); font-size: 15.5px; }
+
+.callout { margin-top: 28px; padding: 22px 24px; border-radius: var(--radius); background: var(--bg-2); border: 1px solid var(--line); }
+.callout .eyebrow { margin-bottom: 8px; }
+.callout p { color: var(--text-2); }
+
+.logos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 30px; }
+.logos div { aspect-ratio: 1; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); display: grid; place-items: center; padding: 18%; }
+@media (max-width: 640px) { .logos { grid-template-columns: repeat(2, 1fr); } }
+
+.next { border-top: 1px solid var(--line); }
+.next a { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 24px; padding: clamp(40px, 6vw, 72px) 0; text-decoration: none; }
+.next h2 { font-size: clamp(30px, 5vw, 64px); letter-spacing: -0.04em; margin-top: 10px; transition: color .25s; }
+.next a:hover h2 { color: var(--accent); }
+.next .go { width: 64px; height: 64px; border-radius: 999px; border: 1px solid var(--line); display: grid; place-items: center; transition: background-color .25s, color .25s, transform .25s; }
+.next a:hover .go { background: var(--accent); color: var(--accent-ink); transform: translateX(6px); border-color: transparent; }
+.next .go svg { width: 24px; height: 24px; }
+
+/* ---------- Illustrations ---------- */
+.gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 18px); }
+.gallery a { display: block; border-radius: var(--radius); overflow: hidden; background: var(--bg-3); position: relative; }
+.gallery a:not(.full) { aspect-ratio: 2.4 / 1; }
+.gallery a.full { grid-column: 1 / -1; }
+.gallery img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.7,.2,1), filter .4s; }
+.gallery a:hover img { transform: scale(1.025); }
+.gallery a .label { position: absolute; left: 14px; bottom: 12px; color: #fff; font: 12px var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; text-shadow: 0 1px 8px rgba(0,0,0,.7); }
+.gallery a:hover .label { opacity: 1; transform: none; }
+@media (max-width: 640px) { .gallery { grid-template-columns: 1fr; } }
+.ill-note { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 5vw, 80px); align-items: start; margin: clamp(64px, 9vw, 120px) 0; }
+.ill-note h2 { font-size: clamp(30px, 4vw, 48px); margin-top: 14px; }
+.ill-note p { color: var(--text-2); font-size: 18px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.tools span { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; color: var(--text-2); }
+@media (max-width: 860px) { .ill-note { grid-template-columns: 1fr; } }
+
+/* ---------- Lightbox ---------- */
+.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(5,6,7,.94); display: none; align-items: center; justify-content: center; padding: 64px clamp(8px, 5vw, 80px); }
+.lightbox.open { display: flex; animation: page-in .25s ease; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 30px 90px rgba(0,0,0,.6); }
+.lightbox .lb-btn { position: absolute; width: 48px; height: 48px; border-radius: 999px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.lightbox .lb-btn:hover { background: rgba(255,255,255,.16); }
+.lightbox .lb-btn svg { width: 22px; height: 22px; }
+.lb-close { top: 14px; right: 14px; }
+.lb-prev { left: 14px; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 14px; top: 50%; transform: translateY(-50%); }
+.lb-count { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.6); font: 12.5px var(--mono); letter-spacing: .06em; }
+@media (max-width: 640px) { .lb-prev, .lb-next { top: auto; bottom: 8px; transform: none; } }
+[data-zoom] { cursor: zoom-in; }
+
+/* ---------- A/B lab ---------- */
+.lab-btn { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 56px; height: 56px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 26px;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.08); transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s; }
+.lab-btn:hover { transform: translateY(-2px) rotate(-12deg); }
+.lab-btn[aria-expanded='true'] { transform: rotate(-12deg) scale(.94); }
+.lab-btn .dot { position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; border-radius: 999px; background: #ff4d6d; border: 2px solid var(--bg); display: none; }
+.lab-btn.has-b .dot { display: block; }
+.lab-panel { position: fixed; right: 20px; bottom: 88px; z-index: 60; width: min(360px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
+  transform-origin: bottom right; animation: lab-in .22s cubic-bezier(.2,.7,.2,1); }
+.lab-panel[hidden] { display: none; }
+@keyframes lab-in { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+.lab-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px 20px; border-bottom: 1px solid var(--line); }
+.lab-top h2 { font-size: 17px; letter-spacing: -0.01em; }
+.lab-top .mono { color: var(--text-3); font-size: 11px; display: block; margin-top: 3px; }
+.lab-x { width: 34px; height: 34px; border-radius: 999px; border: 0; background: transparent; color: var(--text-2); cursor: pointer; display: grid; place-items: center; font-size: 17px; }
+.lab-x:hover { background: var(--bg-3); color: var(--text); }
+.lab-speed { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 12px; padding: 14px 20px 16px; border-bottom: 1px solid var(--line); }
+.lab-speed label { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.lab-speed input { width: 84px; height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--text); font: 500 14px var(--mono); text-align: right; }
+.lab-speed input:focus { outline: none; border-color: var(--accent); }
+.lab-speed input[aria-invalid='true'] { border-color: #ff4d6d; }
+.lab-speed .out { grid-column: 1 / -1; font-size: 12.5px; color: var(--text-3); }
+.lab-speed .out b { color: var(--text-2); font-weight: 600; }
+.lab-item { padding: 18px 20px; }
+.lab-item + .lab-item { border-top: 1px solid var(--line); }
+.lab-item-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.lab-item-head h3 { font-size: 15px; letter-spacing: -0.01em; }
+.lab-replay { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: transparent; color: var(--text-2); font: 500 13px var(--font); cursor: pointer; }
+.lab-replay:hover { color: var(--text); border-color: var(--text-3); }
+.lab-opts { display: grid; gap: 8px; }
+.lab-opt { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; text-align: left; width: 100%; padding: 12px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; font: inherit; transition: border-color .2s, background-color .2s; }
+.lab-opt:hover { border-color: var(--text-3); }
+.lab-opt[aria-checked='true'] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--bg)); }
+.lab-opt .key { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font: 500 13px var(--mono); background: var(--bg-3); color: var(--text-2); }
+.lab-opt[aria-checked='true'] .key { background: var(--accent); color: var(--accent-ink); }
+.lab-opt strong { display: block; font-size: 14.5px; font-weight: 600; }
+.lab-opt span.d { display: block; font-size: 13px; line-height: 1.45; color: var(--text-2); margin-top: 2px; }
+.lab-foot { padding: 12px 20px 16px; color: var(--text-3); font-size: 12.5px; border-top: 1px solid var(--line); }
+@media (max-width: 640px) { .lab-btn { right: 14px; bottom: 14px; width: 50px; height: 50px; font-size: 23px; } .lab-panel { right: 16px; bottom: 76px; } }
+
+/* ---------- Landing animation, variant B: "boot sequence" ----------
+   html.intro-b hides the hero image and every [data-intro] element until the sequence brings
+   them in; html.intro-done (or removing intro-b) returns everything to normal. */
+html.intro-b .hero-slides { opacity: 0; }
+html.intro-b [data-intro] { opacity: 0; }
+html.intro-b .hero::after { opacity: 0; }
+html.intro-b .hero-slides.boot { opacity: 1; animation: crt-on calc(1.4s * var(--k)) cubic-bezier(.6,0,.2,1) both; }
+html.intro-b .hero.shade::after { opacity: 1; transition: opacity calc(1.6s * var(--k)) ease; }
+html.intro-b [data-intro].in { opacity: 1; animation: glitch-in calc(.84s * var(--k)) steps(1, end) both; }
+html.intro-b [data-intro].in.soft { animation: glitch-soft calc(.68s * var(--k)) steps(1, end) both; }
+
+@keyframes crt-on {
+  0%   { clip-path: inset(50% 0 50% 0); filter: brightness(4) saturate(0) contrast(1.4); transform: scale(1.04); }
+  22%  { clip-path: inset(49.6% 0 49.6% 0); filter: brightness(4) saturate(0) contrast(1.4); }
+  48%  { clip-path: inset(8% 0 12% 0); filter: brightness(1.9) saturate(.3) hue-rotate(-12deg); }
+  56%  { clip-path: inset(14% 0 4% 0); }
+  64%  { clip-path: inset(0 0 0 0); filter: brightness(1.35) saturate(.7); }
+  72%  { filter: brightness(.85) saturate(1.1); }
+  80%  { filter: brightness(1.15); }
+  100% { clip-path: inset(0 0 0 0); filter: none; transform: scale(1); }
+}
+@keyframes glitch-in {
+  0%   { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(-10px); }
+  8%   { opacity: 1; clip-path: inset(12% 0 58% 0); transform: translateX(7px); text-shadow: -3px 0 rgba(0,240,255,.8), 3px 0 rgba(255,206,60,.9); }
+  16%  { opacity: .15; clip-path: inset(62% 0 6% 0); transform: translateX(-5px); }
+  26%  { opacity: 1; clip-path: inset(30% 0 28% 0); transform: translateX(3px); text-shadow: 2px 0 rgba(0,240,255,.7), -2px 0 rgba(255,206,60,.8); }
+  36%  { opacity: .5; clip-path: inset(0 0 44% 0); transform: translateX(-2px); }
+  48%  { opacity: 1; clip-path: inset(0 0 0 0); transform: translateX(1px) skewX(-6deg); text-shadow: -1px 0 rgba(0,240,255,.6), 1px 0 rgba(255,206,60,.6); }
+  60%  { opacity: .8; transform: none; }
+  72%  { opacity: 1; text-shadow: none; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); transform: none; text-shadow: none; }
+}
+@keyframes glitch-soft {
+  0%   { opacity: 0; transform: translateY(4px); }
+  20%  { opacity: 1; }
+  35%  { opacity: .2; }
+  55%  { opacity: 1; transform: translateX(2px); }
+  70%  { opacity: .6; transform: none; }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The effects layer: scanlines, a sweep bar and short-lived HUD fragments. */
+.intro-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; transition: opacity calc(.8s * var(--k)) ease; }
+.intro-fx.out { opacity: 0; }
+.intro-fx .lines { position: absolute; inset: 0; opacity: .5;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
+.intro-fx .sweep { position: absolute; left: 0; right: 0; height: 140px; top: -140px;
+  background: linear-gradient(180deg, transparent, rgba(255,206,60,.06) 70%, rgba(255,240,200,.5) 99%, transparent);
+  animation: sweep calc(1.75s * var(--k)) cubic-bezier(.5,0,.3,1) forwards; }
+@keyframes sweep { to { top: 100%; } }
+.hud { position: absolute; font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.75); white-space: nowrap;
+  animation: hud-flicker var(--life, .5s) steps(1, end) forwards; }
+.hud.acc { color: var(--accent); }
+.hud.box { border: 1px solid currentColor; opacity: .7; }
+.hud.box::before, .hud.box::after { content: ''; position: absolute; width: 6px; height: 6px; border: 2px solid currentColor; }
+.hud.box::before { left: -3px; top: -3px; border-right: 0; border-bottom: 0; }
+.hud.box::after { right: -3px; bottom: -3px; border-left: 0; border-top: 0; }
+.hud.bar { height: 2px; background: currentColor; transform-origin: left; animation: hud-flicker var(--life, .5s) steps(1, end) forwards, bar-grow var(--life, .5s) cubic-bezier(.3,0,.2,1) forwards; }
+.hud.rule { height: 1px; background: linear-gradient(90deg, transparent, currentColor 20%, currentColor 80%, transparent); opacity: .5; }
+.hud.cross { width: 22px; height: 22px; }
+.hud.cross::before, .hud.cross::after { content: ''; position: absolute; background: currentColor; }
+.hud.cross::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+.hud.cross::after { top: 50%; left: 0; right: 0; height: 1px; }
+@keyframes hud-flicker { 0% { opacity: 0; } 8% { opacity: 1; } 18% { opacity: .2; } 26% { opacity: 1; } 70% { opacity: 1; } 78% { opacity: 0; } 84% { opacity: .8; } 100% { opacity: 0; } }
+@keyframes bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* A hairline with a square at each end, beside a label (flip puts the label on the left). */
+.hud.link { display: flex; align-items: center; gap: 9px; }
+.hud.link.flip { flex-direction: row-reverse; }
+.hud.link .wire { position: relative; height: 1px; background: currentColor; transform-origin: left;
+  animation: bar-grow calc(.45s * var(--k)) cubic-bezier(.3,0,.2,1) both; }
+.hud.link.flip .wire { transform-origin: right; }
+.hud.link .wire::before, .hud.link .wire::after { content: ''; position: absolute; top: -2.5px; width: 6px; height: 6px; background: currentColor; }
+.hud.link .wire::before { left: -3px; }
+.hud.link .wire::after { right: -3px; }
+/* Ambient scans: the last bit of a burst flickers on and holds, then flickers out. */
+.ambient-fx .hud.hold { animation: hud-in calc(.5s * var(--k)) steps(1, end) forwards; }
+.ambient-fx .hud.bar.hold { animation: hud-in calc(.5s * var(--k)) steps(1, end) forwards, bar-grow calc(.5s * var(--k)) cubic-bezier(.3,0,.2,1) forwards; }
+.ambient-fx .hud.release { animation: hud-out .35s steps(1, end) forwards; }
+@keyframes hud-in { 0% { opacity: 0; } 12% { opacity: 1; } 28% { opacity: .2; } 42% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes hud-out { 0% { opacity: 1; } 25% { opacity: .15; } 45% { opacity: .9; } 70% { opacity: .1; } 100% { opacity: 0; } }
+
+/* ---------- Scroll reveals, variant B: "glitched loading" ----------
+   The page is split into units (.gx-u: a card, a row, a run of case-study text, a figure),
+   each with ordered parts (.gx-p). In html.gl-b a unit plays: scattered scans, then a sky-blue
+   frame, then its parts glitch in one by one (images, then headings, then body).
+   Scans, frames and readouts are drawn in .gx-layer, over the page. */
+:root { --scan: rgba(125, 196, 255, .55); --scan-text: rgba(160, 212, 255, .85); }
+:root[data-theme='light'] { --scan: rgba(30, 120, 200, .4); --scan-text: rgba(25, 105, 180, .8); }
+html.gl-b .reveal { opacity: 1; transform: none; transition: none; }
+html.gl-b .gx-p { opacity: 0; }
+html.gl-b .gx-p.in { opacity: 1; animation: glitch-in calc(.68s * var(--k)) steps(1, end) both; }
+
+/* Variant C, "clean scan": corner brackets, then the content comes in: text glitches in (as in B)
+   and images fade in slowly, with no skew and nothing passing over them. */
+html.gl-c .reveal { opacity: 1; transform: none; transition: none; }
+html.gl-c .gx-p { opacity: 0; }
+html.gl-c .gx-p.in { opacity: 1; animation: glitch-in calc(.68s * var(--k)) steps(1, end) both; }
+html.gl-c .gx-p.gx-m.in { animation: gx-fade calc(.9s * var(--k)) ease both; }
+/* Card boxes wait for their unit, then fade in with the frame (before their contents). */
+html.gl-b .gx-u .card, html.gl-c .gx-u .card { opacity: 0; transition: opacity calc(.35s * var(--k)) ease; }
+html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
+@keyframes gx-fade { from { opacity: 0; } }
+.gx-corners { position: absolute; --c: var(--scan); --l: 14px;
+  background:
+    linear-gradient(var(--c), var(--c)) left top / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left top / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / 1px var(--l) no-repeat;
+  animation: gx-hold var(--life) ease both; }
+.gx-layer .gx-quiet { animation: gx-hold var(--life) ease both; }
+@keyframes gx-hold { 0% { opacity: 0; } 10% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+.gx-layer { position: absolute; left: 0; top: 0; width: 100%; height: 0; overflow: visible; pointer-events: none; z-index: 40; }
+.gx-layer .hud { color: var(--text-3); }
+.gx-layer .hud.sky { color: var(--scan-text); }
+.gx-layer .hud.box.sky { color: var(--scan); opacity: 1; }
+.gx-layer .gx-read { transform: translateX(-100%); }
+.gx-scan-wrap { position: absolute; overflow: hidden; pointer-events: none; border-radius: var(--radius); }
+.gx-scan { position: absolute; left: 0; right: 0; height: 45%; top: -45%; mix-blend-mode: screen;
+  background: linear-gradient(180deg, transparent, rgba(125,196,255,.08) 70%, rgba(200,230,255,.55) 99%, transparent);
+  animation: sweep calc(.8s * var(--k)) cubic-bezier(.5,0,.3,1) forwards; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5ZM3 9.75h4v11H3v-11Zm7 0h3.8v1.6h.06c.53-1 1.83-2 3.77-2 4.03 0 4.77 2.6 4.77 6v5.4h-4v-4.8c0-1.15-.02-2.62-1.6-2.62-1.6 0-1.84 1.25-1.84 2.54v4.88h-4v-11Z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16M4 16h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+</svg>
+
+<header class="site-header" id="header">
+  <div class="wrap">
+    <a class="brand" href="#/" aria-label="Marek Heiland, home" data-intro="1"><span class="brand-logo" aria-hidden="true"></span>Marek Heiland</a>
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="nav" data-intro="soft"><svg><use href="#i-menu"/></svg></button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#/" data-nav="home" data-intro="soft">Home</a>
+      <a href="#/work" data-nav="work" data-intro="soft">Work</a>
+      <a href="#/illustrations" data-nav="illustrations" data-intro="soft">Illustrations</a>
+      <a href="#/about" data-nav="about" data-intro="soft">About</a>
+      <a href="#/contact" data-nav="contact" data-intro="soft">Contact</a>
+      <button class="icon-btn" id="themeBtn" aria-label="Switch to light theme" data-intro="soft"><svg><use href="#i-sun"/></svg></button>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- =================================================================== HOME -->
+<div data-route="home" data-title="Marek Heiland — Product Designer &amp; Illustrator">
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-slides" id="heroSlides">
+      <img class="on" src="img/04-FACILITY.jpg" alt="Illustration: figures in a yellow room beside a giant black sphere">
+      <img src="img/01-HUNT.jpg" alt="" loading="lazy">
+      <img src="img/02-AMBUSH.jpg" alt="" loading="lazy">
+      <img src="img/03-MOMENTS.jpg" alt="" loading="lazy">
+      <img src="img/05-SETTINGS.jpg" alt="" loading="lazy">
+    </div>
+    <div class="wrap hero-content">
+      <span class="eyebrow" data-intro="1" data-scramble>Product designer &amp; illustrator · Sydney</span>
+      <h1 data-intro="1" data-scramble>Hey, I'm Marek<span>.</span></h1>
+      <div class="hero-intro">
+        <p data-intro="1">I'm a designer and an Illustrator based in Sydney. I've worked as a Product Designer with 7 years of extensive experience in creating multi-platform software.</p>
+        <p data-intro="1">I have a never ending passion for creativity and a drive to adapt to new processes and challenges.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn primary" href="#/work" data-intro="1">See the work <svg><use href="#i-arrow"/></svg></a>
+        <a class="btn glass" href="mailto:marekheiland@gmail.com" data-intro="1"><svg><use href="#i-mail"/></svg>E-mail</a>
+        <a class="btn glass" href="https://www.linkedin.com/in/marek-heiland-48b8a0b9" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-in"/></svg>LinkedIn</a>
+        <a class="btn glass" href="files/CV.pdf" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-doc"/></svg>CV</a>
+      </div>
+    </div>
+    <div class="hero-foot" data-intro="soft">
+      <span class="mono" id="heroLabel">004 · Facility</span>
+      <div class="hero-dots" id="heroDots"></div>
+    </div>
+  </section>
+
+  <section class="section" id="work">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Selected work</span><h2>Case studies</h2></div>
+        <p>Two products and the features behind them, from early research to release.</p>
+      </div>
+      <div class="work-grid">
+        <a class="work-card wide reveal" href="#/work/axis">
+          <div class="media device"><img src="img/AXIS_home.png" alt="AXIS shown on a TV, laptop, tablet and phone"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+          <div class="meta"><div><h3>AXIS</h3><p>A user experience management platform designed to empower and manage sport and entertainment services.</p></div><span class="tag mono">2017–2023</span></div>
+        </a>
+        <a class="work-card reveal" href="#/work/recurring-schedule">
+          <div class="media device"><img src="img/Mtribes_home.png" alt="MTRIBES on a laptop and phone, showing analytics and user segmentation"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+          <div class="meta"><div><h3>MTRIBES: Recurring Schedule</h3><p>Updating existing functionality to solve client pain points.</p></div><span class="tag mono">2022–2023</span></div>
+        </a>
+        <a class="work-card reveal" href="#/work/hero-carousel">
+          <div class="media"><img src="img/Outcomes_Hero.png" alt="The finished AXIS hero carousel"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+          <div class="meta"><div><h3>AXIS: Hero Carousel</h3><p>Creating a hero carousel component for a multi-platform service.</p></div><span class="tag mono">2023</span></div>
+        </a>
+        <a class="work-card wide reveal" href="#/work/design-system">
+          <div class="media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+          <div class="meta"><div><h3>AXIS: Design System</h3><p>Creating and maintaining a design system for an existing white label product.</p></div><span class="tag mono">2022–2023</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="experience">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Experience</span><h2>How I work</h2></div>
+        <p>Throughout the last 7 years, countless projects, features and 2 products, I’ve had the chance to refine my skills through a range of responsibilities.</p>
+      </div>
+      <div class="exp">
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">01</span><h3>End to end feature design</h3><p>The process at Deltatre is based on the Double Diamond. We’ve slowly shaped the process to fit our product teams workflow.</p></div>
+          <div class="exp-media"><img src="img/UX_Process_alt.jpg" alt="End to end feature design: the design process used at Deltatre, based on the Double Diamond" loading="lazy" data-zoom></div>
+        </div>
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">02</span><h3>Cross Discipline Collaboration</h3><p>I've always embraced collaboration with all disciplines involved in creating our products. Early involvement of key parties from each discipline allows for discussing any technical insights and feasibility concerns.</p></div>
+          <div class="exp-media"><img src="img/Team_BW.jpg" alt="The team working together" loading="lazy" data-zoom></div>
+        </div>
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">03</span><h3>Multi-Platform Design</h3><p>I've created consistent experiences across different devices and operating systems. I've designed for devices such as TV's, set top boxes, consoles, tablet, mobile and computer browsers. Leveraging their native components and utilising guidelines for a more efficient development.</p></div>
+          <div class="exp-media"><img src="img/multi-platform-alt.jpg" alt="One design shown across several devices" loading="lazy" data-zoom></div>
+        </div>
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">04</span><h3>Design Systems</h3><p>I’ve worked on design systems that accompany simple products aimed at single device targets, as well as massive multi-platform apps. Utilising atomic design methodology that breaks down interfaces into smaller components and allows more granular control, as well as ability to apply global changes rapidly.</p></div>
+          <div class="exp-media"><img src="img/DS_Header.jpg" alt="Design system components" loading="lazy" data-zoom></div>
+        </div>
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">05</span><h3>Designing for accessibility</h3><p>I’ve included accessibility as one of the key steps of the design process for features I've worked on. Over the years I've utilised WCAG and platform specific guidelines, as well as an array of tools such as contrast checks and colour blindness filters to create inclusive designs.</p></div>
+          <div class="exp-media"><img src="img/design_for_accessibility.png" alt="Accessibility annotations on a design" loading="lazy" data-zoom></div>
+        </div>
+        <div class="exp-row reveal">
+          <div><span class="eyebrow">06</span><h3>Usability Testing</h3><p>I use prototyping to validate most of my design decisions, investigating concerns and identifying areas for improvement. When possible, I've facilitated usability testing utilising prototypes, created based on a script that guides the user through a series of tasks. I discuss usability testing further in the <a href="#/work/recurring-schedule">Recurring Schedule case study</a>.</p></div>
+          <div class="exp-media"><img src="img/usability-testing-process.jpg" alt="The usability testing process" loading="lazy" data-zoom></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="art">
+    <div class="wrap section-head reveal">
+      <div><span class="eyebrow">Illustrations</span><h2>Behind the dystopia</h2></div>
+      <a class="arrow-link" href="#/illustrations">All illustrations <svg><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="strip reveal">
+      <a href="#/illustrations"><img src="img/H-SPECOP.jpg" alt="Illustration: a soldier in a neon-lit alley" loading="lazy"></a>
+      <a href="#/illustrations"><img src="img/M-Ramen.jpg" alt="Illustration: a ramen bar" loading="lazy"></a>
+      <a href="#/illustrations"><img src="img/S-Highway.jpg" alt="Illustration: a highway" loading="lazy"></a>
+      <a href="#/illustrations"><img src="img/H-ORB.jpg" alt="Illustration: an orb" loading="lazy"></a>
+      <a href="#/illustrations"><img src="img/Fugative_pt3-studio.jpg" alt="Illustration from the Fugitive series" loading="lazy"></a>
+      <a href="#/illustrations"><img src="img/S-Laneway.jpg" alt="Illustration: a laneway" loading="lazy"></a>
+    </div>
+  </section>
+
+  <section class="section alt" id="about">
+    <div class="wrap about">
+      <div class="reveal">
+        <span class="eyebrow">About</span>
+        <h2>A little more about me</h2>
+        <div class="bio">
+          <p>I've originated from Poland and lived in Australia for the last 18 years. I've always had a passion for art and design since a young age, eventually I went down the path of studying graphic design before landing a hybrid UX / UI role at Massive Interactive, later merged with Deltatre.</p>
+          <p>I acquired invaluable experience over 7 years at the company, starting my role in a service design team. Creating solutions for features in a client facing environment. As time went on, I was given the opportunity to join the product team; where i'd spend the next the rest of my journey working across various products.</p>
+          <p>Beyond my extensive work with user experience design, I've also been able to apply my visual design background and create various illustrations, graphics and help center content to enrich our products.</p>
+        </div>
+      </div>
+      <div class="reveal">
+        <span class="eyebrow">Responsibilities</span>
+        <p class="muted" style="margin:18px 0 22px">I've had the opportunity to take on and adapt to a range of new tasks, always keen on taking on new challenges.</p>
+        <ul class="resp">
+          <li>Designing for accessibility</li>
+          <li>Cross-platform &amp; OS design</li>
+          <li>Utilising tokens in a design system</li>
+          <li>Design system creation &amp; maintenance</li>
+          <li>Working with developers</li>
+          <li>Working alongside QA teams</li>
+          <li>Leading features from request to release</li>
+          <li>Producing low to high fidelity prototypes</li>
+          <li>Organising and running testing sessions</li>
+          <li>Producing educational material</li>
+          <li>Mentoring junior designers</li>
+          <li>Running knowledge sharing workshops</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- =================================================================== WORK: AXIS -->
+<article data-route="work/axis" data-title="AXIS — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Product · Deltatre</span>
+    <h1>AXIS</h1>
+    <p class="lede">A white label product for video merchandising. Offering the ability to package, present and monetise their video assets in real-time across any device.</p>
+    <dl class="facts">
+      <div><dt>Years</dt><dd>2017–2023</dd></div>
+      <div><dt>Platforms</dt><dd>Web, iOS, Android, TV, Xbox, set-top boxes</dd></div>
+    </dl>
+  </header>
+  <div class="wrap"><div class="cover reveal"><img src="img/AXIS_PROD.png" alt="AXIS across devices" data-zoom></div></div>
+  <div class="wrap case-body">
+    <nav class="toc" aria-label="On this page"></nav>
+    <div class="prose">
+      <section id="axis-involvement" data-toc="My involvement">
+        <span class="eyebrow">My involvement</span>
+        <h2>Early product ideation</h2>
+        <p>I had the opportunity to partake in the early research and ideation process of creating the new iteration of AXIS, as it is seen today. I was involved in early workshops, discussions, direction making, as well as designing a large number of key features and templates that would lay the foundation of the product moving forward.</p>
+        <figure class="reveal"><img src="img/Ideation.jpg" alt="Early ideation for AXIS" loading="lazy" data-zoom></figure>
+      </section>
+      <section id="axis-e2e" data-toc="End to end feature design">
+        <span class="eyebrow">Process</span>
+        <h2>End to end feature design</h2>
+        <p>Throughout the product's development I've had the opportunity create features from end to end. Clarifying requirements early to ensure we're designing the right solution. Keeping in touch developers to design of a feasible solution, as well as providing design documentation and kick-off sessions. Finalising the feature by testing it along with quality assurance teams.</p>
+        <figure class="reveal"><img src="img/End_to_End_Prod.png" alt="End to end feature design" loading="lazy" data-zoom></figure>
+      </section>
+      <section id="axis-cross" data-toc="Cross-platform design">
+        <span class="eyebrow">Platforms</span>
+        <h2>Cross-platform design</h2>
+        <p>As the development of AXIS continued, I was responsible for producing a consistent experience across several platforms. Starting with responsive web, covering a wide range of screen sizes and types allowed us to solve a large number of templates and features; before translating them to other platforms such as mobile, tablet, TV, XBOX and a range of set-top boxes.</p>
+        <figure class="reveal"><img src="img/multi-platform.jpg" alt="AXIS on many platforms" loading="lazy" data-zoom></figure>
+      </section>
+      <section id="axis-intl" data-toc="International teams">
+        <span class="eyebrow">Collaboration</span>
+        <h2>International teams</h2>
+        <p>As the scope of development grew over the years, internal teams from around the world took different sections of the app development. Despite this, a large portion of the design team remained in Sydney. I've had the chance to facilitate a range of kick-off and check-in sessions for a number of features in collaboration with international teams.</p>
+        <figure class="reveal"><img src="img/International.jpg" alt="Working with international teams" loading="lazy" data-zoom></figure>
+      </section>
+      <section id="axis-clients" data-toc="Clients">
+        <span class="eyebrow">Clients</span>
+        <h2>Recent clients using AXIS</h2>
+        <div class="logos">
+          <div><img src="img/BELLMEDIA.png" alt="Bell Media" loading="lazy"></div>
+          <div><img src="img/BRITBOX.png" alt="BritBox" loading="lazy"></div>
+          <div><img src="img/DAZN.png" alt="DAZN" loading="lazy"></div>
+          <div><img src="img/TELECINE.png" alt="Telecine" loading="lazy"></div>
+        </div>
+      </section>
+      <section id="axis-cases" data-toc="Case studies">
+        <span class="eyebrow">Case studies</span>
+        <h2>Features I designed on AXIS</h2>
+        <div class="work-grid" style="margin-top:30px">
+          <a class="work-card" href="#/work/hero-carousel">
+            <div class="media"><img src="img/Outcomes_Hero.png" alt="" loading="lazy"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+            <div class="meta"><div><h3>AXIS: Hero Carousel</h3><p>Creating a hero carousel component for a multi-platform service.</p></div><span class="tag mono">2023</span></div>
+          </a>
+          <a class="work-card" href="#/work/design-system">
+            <div class="media"><img src="img/Design_System_header.jpg" alt="" loading="lazy"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+            <div class="meta"><div><h3>AXIS: Design System</h3><p>Creating and maintaining a design system for an existing white label product.</p></div><span class="tag mono">2022–23</span></div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="next"><div class="wrap"><a href="#/work/hero-carousel"><div><span class="eyebrow">Next case study</span><h2>AXIS: Hero Carousel</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
+</article>
+
+<!-- =================================================================== WORK: HERO CAROUSEL -->
+<article data-route="work/hero-carousel" data-title="AXIS: Hero Carousel — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Case study · AXIS</span>
+    <h1>AXIS: Hero Carousel</h1>
+    <p class="lede">Existing offering of Hero Carousels lacked a level of control expected by our clients. Our new hero carousel would aim to provide users with greater control over their presentation, utilising robust actions, metadata and assets. This case study looks deeper into the work that brings a consistent experience across different device types and operating systems, while addressing common client requests.</p>
+    <dl class="facts">
+      <div><dt>Year</dt><dd>2023</dd></div>
+      <div><dt>Product</dt><dd>AXIS</dd></div>
+      <div><dt>Platforms</dt><dd>Web, iOS, Android, TV</dd></div>
+    </dl>
+  </header>
+  <div class="wrap"><div class="cover tall reveal"><img src="img/axis-hero-header.jpg" alt="The new AXIS hero carousel" data-zoom></div></div>
+  <div class="wrap case-body">
+    <nav class="toc" aria-label="On this page"></nav>
+    <div class="prose">
+      <section id="hc-goals" data-toc="Goals">
+        <span class="eyebrow">Goals</span>
+        <h2>What it needed to do</h2>
+        <div class="cards">
+          <div class="card"><span class="num">01</span><h3>Client</h3><ul><li><strong>Reduce cost</strong> of project customisation, allowing clients to focus on maximising their content faster.</li><li><strong>Increased control</strong> including the ability to show, hide and edit all aspects of the carousel with no need for further developer input.</li></ul></div>
+          <div class="card"><span class="num">02</span><h3>Internal</h3><ul><li><strong>Cost reduction</strong> through productisation of frequently requested customisations.</li><li><strong>Increase value</strong> of AXIS by featuring expected industry standards.</li></ul></div>
+          <div class="card"><span class="num">03</span><h3>End-Users</h3><ul><li><strong>Improved user experience</strong> through addition of robust metadata, descriptions, as well as relevant actions on the carousel.</li><li><strong>Standardised accessibility</strong> ensuring the carousel is built with expected WCAG standards in mind across all platforms included.</li></ul></div>
+        </div>
+      </section>
+
+      <section id="hc-users" data-toc="Users">
+        <span class="eyebrow">Users</span>
+        <h2>Operators and end-users</h2>
+        <div class="figs">
+          <div class="card">
+            <img class="thumb" src="img/OPERATORS.png" alt="" loading="lazy">
+            <h3>Operators</h3>
+            <p>Operators are our clients utilising AXIS, setting up, editing and publishing their content.</p>
+            <p style="margin-top:14px"><strong>As an operator I want to:</strong></p>
+            <ul>
+              <li>Display <strong>Upcoming</strong>, <strong>Live</strong> or <strong>Past Sport content</strong> and have a relative status displayed to the end-user.</li>
+              <li>Display Separate Experiences for <strong>Visitors</strong> vs <strong>Users</strong>.</li>
+              <li>Show <strong>mixed content</strong> in the Hero Carousel, such as episodic TV show content, Movies, Sports and more.</li>
+              <li>Display a <strong>video background</strong> to increase engagement with my carousel content.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <img class="thumb" src="img/USERS.png" alt="" loading="lazy">
+            <h3>End-users</h3>
+            <p>End-users navigate and consume content published by the operator.</p>
+            <p style="margin-top:14px"><strong>As a user I want to:</strong></p>
+            <ul>
+              <li>See <strong>relevant information surfaced</strong> about the content without needing to enter the details page.</li>
+              <li>See <strong>when</strong> an <strong>upcoming</strong> piece of <strong>live</strong> content is starting.</li>
+              <li><strong>Resume</strong> or <strong>play</strong> content straight from the carousel.</li>
+              <li><strong>Purchase</strong> or <strong>rent</strong> content straight from the carousel.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="hc-process" data-toc="The process">
+        <span class="eyebrow">Process</span>
+        <h2>The process</h2>
+        <p>We utilized a process based on the double diamond framework, adapted to fit our product teams pipeline. Involving relevant parties throughout each phase in our projects and features.</p>
+        <figure class="reveal"><img src="img/UX_Process_alt.jpg" alt="The design process, based on the Double Diamond" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-problem" data-toc="Understanding the problem">
+        <span class="eyebrow">Research</span>
+        <h2>Understanding the problem</h2>
+        <p>The lead designer conducted a customisation analysis on AXIS. This involved investigating:</p>
+        <ul>
+          <li>Which components or templates of AXIS were frequently customised by our clients.</li>
+          <li>What were the common customisations requests.</li>
+          <li>Frequency of each request to prioritise which features to work on adding or improving.</li>
+        </ul>
+        <p style="margin-top:18px">Hero banners often being the first content presented to the end-users, they were also the most frequently customised.</p>
+        <p>Combining the data from the customisation analysis, we’ve found that 4 of 6 clients customised or explored customising our “out of the box” range of hero banners to match some of the current industry standards.</p>
+        <figure class="reveal"><img src="img/Common_Custom.png" alt="Commonly requested customisations" loading="lazy" data-zoom><figcaption>Commonly requested customisations.</figcaption></figure>
+      </section>
+
+      <section id="hc-market" data-toc="Market research">
+        <span class="eyebrow">Research</span>
+        <h2>Market research insights</h2>
+        <ul>
+          <li>5 out of 6 services use a <strong>video background</strong> on their hero carousel.</li>
+          <li>4 out of 6 services use a <strong>full height 16:9 background image</strong>, while carefully utilizing gradients and margins to ensure legibility and discoverability of content below.</li>
+          <li>6 out of 6 services <strong>reduced their carousel functionality</strong>, such as using a static image instead of a video background <strong>on their mobile apps</strong>.</li>
+          <li>Unless showing live content, 5 out of 6 services display a "<strong>More Info" button on TV platforms</strong> for Movies and TV Shows.</li>
+        </ul>
+        <figure class="reveal"><img src="img/Market.png" alt="Market research summary" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-complexity" data-toc="Complexity exploration">
+        <span class="eyebrow">Scoping</span>
+        <h2>Complexity exploration</h2>
+        <p>In the early stages and throughout the process I aim to gather insights into areas that may pose either a technical challenge during development, or that will require some more thorough exploration in design. Highlighting areas that may require discussions to take place early to understand the scope better. Here's some notable areas of complexity faced in this feature:</p>
+        <div class="cards">
+          <div class="card"><h3>Video background</h3><ul><li>Functionality currently unavailable within the platforms codebase.</li><li>Accessibility considerations</li></ul></div>
+          <div class="card"><h3>Legibility</h3><ul><li>Video backgrounds are less visually predictable and may cause low contrast when playback begins.</li><li>Will need to explore and define clear gradient rules to compensate content with a large amount of text.</li></ul></div>
+          <div class="card"><h3>Mixed asset support</h3><ul><li>Such as movies, TV shows, Live events</li><li>Ensuring the User experience does not diminish with mixed content shown on the carousel, for example sport’s content generally having longer titles as well as extra states like upcoming, live and past event.</li></ul></div>
+          <div class="card"><h3>Cross-platform</h3><ul><li>Each platform can utilise native components, reducing development time better spent elsewhere.</li><li>Market research has show a reduction of certain performance heavy features on smaller devices such as video backgrounds.</li></ul></div>
+          <div class="card"><h3>Usability testing</h3><ul><li>Facilitating usability testing sessions to validate design decisions where there isn't enough research.</li><li>Creating either low or high fidelity prototypes depending on the complexity of testing required.</li></ul></div>
+          <div class="card"><h3>Accessibility</h3><ul><li>Creating an accessibility specs to provide optimal experience for users navigating using only a keyboard.</li><li>Providing both an MVP and an ideal solution to ensure implementation at least at a basic level.</li></ul></div>
+        </div>
+      </section>
+
+      <section id="hc-mvp" data-toc="Defining the MVP">
+        <span class="eyebrow">Scoping</span>
+        <h2>Defining the MVP</h2>
+        <p>After conducting complexity analysis and organising various catch-ups with developers to discuss feasibility. It was deemed that <strong>video backgrounds</strong> would be the <strong>largest and most difficult to estimate</strong>. The developers still needed to perform a spike into how they’d implement it. Based on our research done earlier, we made the decision to focus on the <strong>frequent client customisation requests</strong> as our <strong>MVP solution</strong>, and handling the video background as part of the second phase.</p>
+      </section>
+
+      <section id="hc-ideation" data-toc="Ideation">
+        <span class="eyebrow">Ideation</span>
+        <h2>Whiteboard sessions</h2>
+        <p>The early phases involve whiteboard and sticky note sessions. Brainstorming with the design team around what the hero carousel will feature, as well as any considerations we can see that will require further exploration, either through user flows, prototypes or during visual design.</p>
+        <figure class="reveal"><img src="img/Whiteboard.jpg" alt="Whiteboard session" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">In the case of this new hero carousel, we were familiar with components on AXIS and had enough market research to base a lot of decisions on. In case of a more complex feature with more unknowns, we could facilitate kick-off workshops with relevant parties. Using several frameworks to facilitate the creation of ideas for new features:</p>
+        <ul><li>Design Studio</li><li>Crazy 8's</li><li>Storyboarding</li><li>Mind Mapping</li></ul>
+      </section>
+
+      <section id="hc-wires" data-toc="Wireframing">
+        <span class="eyebrow">Wireframing</span>
+        <h2>Layouts, flows and states</h2>
+        <p><strong>Responsive Web App</strong> provides insight into how much extra exploration smaller screens may require with the additional elements. Solving a lot of these problems early on will allow us to translate most of the decisions over to native mobile platforms.</p>
+        <p><strong>Native &amp; TV platforms</strong> most of the rules and behaviours will carry over for consistency. However, platforms like iOS, Android or TV targets will have their own documentation with any platform-specific annotations.</p>
+        <p><strong>Layouts, Flows, States, Edge Cases and Annotations</strong> documented using the wireframing and prototyping software Axure. We can quickly begin to visualise additions to the hero carousel, allowing quick iterations due to their low fidelity nature. Wireframes and flows also serve as a great discussion point allowing the design team, developers, stakeholders and more, to easily quickly see the direction. It's also worth thinking though high level rules and behaviour at this stage, though it's a fine balance of not adding too much detail too early. Ensuring time is well spent in case any aspect doesn't make the final design or build.</p>
+        <figure class="reveal"><img src="img/Wires_and_Flows.jpg" alt="Wireframes and flows in Axure" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-reqs" data-toc="Requirement exploration">
+        <span class="eyebrow">Wireframing</span>
+        <h2>Requirement exploration</h2>
+        <p>After a series of internal reviews and discussion help iterate the layout. I begin to explore other requirements and goals for the feature. So far we've created the general layout based on our existing hero offerings and in reference to market research. We've also added new components to the hero such as buttons, short descriptions, metadata and more. We can now begin to explore how those components will be affected our other requirements such as:</p>
+        <ul><li>Supporting mixed assets in the carousel.</li><li>Implementing enhanced live support (e.g. countdowns for upcoming, state changes for live content).</li></ul>
+        <figure class="reveal"><img src="img/Wire_States.jpg" alt="Wireframe of an event asset and its states" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">Above you can see an example of a wireframe created to explore and showcase:</p>
+        <ul>
+          <li>What an event asset would look like.</li>
+          <li>How the components translate over to a mobile device.</li>
+          <li>Breakdown of action states that will be present on this particular asset type.</li>
+          <li>Early exploration of how components like badges or buttons adapt to a smaller screen when their labels exceed available width.</li>
+        </ul>
+      </section>
+
+      <section id="hc-pm" data-toc="Presentation Manager">
+        <span class="eyebrow">Operator tools</span>
+        <h2>Presentation Manager</h2>
+        <p>Under the hood of AXIS is presentation manager. A web interface allowing operators to control their content, users, it’s components and more. Each component, like our hero carousel, has a range of properties allowing the operator to change aspects such as content alignment, visibility of elements like the tagline or badge and more. The new hero carousel introduced a number of additional properties to ensure the user would have an adequate level of control, without the need for developer support. As we explored each part of the carousel. we also created a document detailing properties for each component of the hero, as well as expected values, copy and tooltips:</p>
+        <figure class="reveal"><img src="img/presentation_manager.jpg" alt="Hero carousel properties in Presentation Manager" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-a11y" data-toc="Accessibility">
+        <span class="eyebrow">Accessibility</span>
+        <h2>Accessibility</h2>
+        <h3>Current implementation</h3>
+        <p>We needed to be strategic about how we'd create specifications for accessibility; across varying devices and operating systems. Starting off by performing an in-depth analysis of existing accessibility implementation on AXIS. We discovered a number of in of inconsistencies between similar templates such as sport detail pages VS movie detail pages.</p>
+        <h3>Guidelines research</h3>
+        <p>Ensuring all apps followed rules and guidelines, I proceeded to research platform specific accessibility standard covering:</p>
+        <ul><li>Browsers on Windows and Mac devices</li><li>iOS and Android phones and tablets</li><li>Various TV’s and set-top boxes</li></ul>
+        <h3>Market research</h3>
+        <p>Conducting and documenting research on the extent of accessibility implementation present on video services in the market. While it helped define the scope and expectation, it also indicted most big services on the internet cover a minimum requirement of accessibility implementation.</p>
+        <h3>Detailed design</h3>
+        <p>Annotating navigation order, interactions and specific narrations, alongside of any UX documentation provided to developers.</p>
+        <figure class="reveal"><img src="img/Accessibility_Wire.jpg" alt="Accessibility annotations: navigation order and narration" loading="lazy" data-zoom></figure>
+        <h3>Design reviews</h3>
+        <p>Making sure the implementation is adhering to designs and guidelines, I review the implementation with Quality Assurance teams. Documenting inconsistencies or need for improvements.</p>
+        <div class="callout"><span class="eyebrow">Retrospective</span><p>Unfortunately due to time and resource constraints we were unable to perform usability testing to further validate the feature.</p></div>
+      </section>
+
+      <section id="hc-visual" data-toc="Visual design">
+        <span class="eyebrow">Visual design</span>
+        <h2>Visual design</h2>
+        <p>My visual design approach begins with an exploration of areas that I’ve identified as potentially problematic or will simply require further exploration to ensure clear rules and good decisions. Identifying and exploring these early ensures that we focus on solving possible issues early on before creating detailed specs that may need to be altered otherwise.</p>
+        <h3>Leveraging existing components and styles</h3>
+        <p>I aim to utilize existing components and styles as much as possible to reduce development time and retain styling consistency. Reducing having one-off styles or components.</p>
+        <figure class="reveal"><img src="img/Design_system.jpg" alt="Existing components and styles from the design system" loading="lazy" data-zoom></figure>
+        <h3>Meeting AA WCAG accessibility standards</h3>
+        <ul><li>Ensuring contrast meets AA standard.</li><li>Producing specification for developers to follow when implementing accessibility functionality.</li><li>Creating clear focus states for keyboard navigation.</li></ul>
+        <figure class="reveal"><img src="img/accesswire.jpg" alt="Contrast and focus states" loading="lazy" data-zoom></figure>
+        <h3>Image format for mobile</h3>
+        <p>Mobile format reduces our horizontal real estate. The common 16:9 image format used on larger devices wouldn’t be impactful on mobile devices.</p>
+        <figure class="reveal"><img src="img/Mobile_format.jpg" alt="Image formats for mobile" loading="lazy" data-zoom></figure>
+        <h3>Height rules</h3>
+        <p>With the browser set to full screen width, the 16:9 background image can take up all available height. Exploring so that image and video background are not obstructed with the new metadata, actions and more. Ensuring optimal discoverability of the content below.</p>
+        <figure class="reveal"><img src="img/HEIGHT_RULES.jpg" alt="Height rules for the hero" loading="lazy" data-zoom></figure>
+        <h3>Mixed content</h3>
+        <p>When mixed content is present, such as a mixture of both movies and tv shows. The content area will vary in height. Sport content often has longer titles than most movies and TV shows. Exploring varying content pinning rules through quick prototypes to determine the least visually disruptive experience.</p>
+        <figure class="reveal"><img src="img/multi-platform-alt-light.jpg" alt="Mixed content across platforms" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-specs" data-toc="Visual design specs">
+        <span class="eyebrow">Handover</span>
+        <h2>Visual design specs</h2>
+        <p>Since our development team was working in a different timezone from Mumbai, It was crucial to provide them with clear spec sheets outlining all expected rules.</p>
+        <ul><li>Typography rules</li><li>Character limits</li><li>Layout spacing, padding and margin rules</li><li>Content area rules</li><li>Platfor specifics</li></ul>
+        <p style="margin-top:18px">Beyond development, this also serves as a reference point for design reviews and quality assurance.</p>
+        <div class="figs">
+          <figure><img src="img/Spec_typo.jpg" alt="Typography spec sheet" loading="lazy" data-zoom></figure>
+          <figure><img src="img/mobile_spec.jpg" alt="Mobile spec sheet" loading="lazy" data-zoom></figure>
+        </div>
+      </section>
+
+      <section id="hc-outcomes" data-toc="Outcomes">
+        <span class="eyebrow">Outcomes</span>
+        <h2>Outcomes</h2>
+        <figure class="reveal"><img src="img/Outcomes_Hero.png" alt="The finished hero carousel" loading="lazy" data-zoom></figure>
+        <figure class="reveal"><img src="img/outcomes_-_Hero.png" alt="The finished hero carousel on several devices" loading="lazy" data-zoom></figure>
+        <figure class="reveal"><img src="img/Sport_Outcome.png" alt="The hero carousel with sport content" loading="lazy" data-zoom></figure>
+        <figure class="reveal"><img src="img/Outcomes_-_Sport.png" alt="Sport content across devices" loading="lazy" data-zoom></figure>
+        <h3>Previous hero for comparison</h3>
+        <figure class="reveal"><img src="img/Outcomes_-_H2.png" alt="The previous hero carousel" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="hc-figma" data-toc="Figma's properties">
+        <span class="eyebrow">Design system</span>
+        <h2>Figma's properties</h2>
+        <p>Throughout the creation of the AXIS design system, we utilised figma’s component properties to be reflective of control AXIS provides to operators per component. It was no different with the hero carousel, as it would be added to the design system and utilised by service designers.</p>
+        <figure class="reveal"><img src="img/PM_FIgma.png" alt="Hero carousel component properties in Figma" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">Beside feature based projects like this one, We’ve been hard at work producing a Design system for AXIS. Bringing consistency between our front end apps and our design documentation, the design system served as an invaluable starting point for producing the visual designs of the new hero. Check out the <a href="#/work/design-system">Design System case study</a> if you’d like to know more about the design system work.</p>
+      </section>
+    </div>
+  </div>
+  <div class="next"><div class="wrap"><a href="#/work/design-system"><div><span class="eyebrow">Next case study</span><h2>AXIS: Design System</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
+</article>
+
+<!-- =================================================================== WORK: DESIGN SYSTEM -->
+<article data-route="work/design-system" data-title="AXIS: Design System — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Case study · AXIS</span>
+    <h1>AXIS: Design System</h1>
+    <p class="lede">Throughout some rapid development cycles, challenges emerged regarding the synchronization between design documentation and what was implemented. Time constraints often hindered designers from reflecting changes between the design documentation and the final product. This discrepancy gradually led to knowledge inconsistencies, creating ambiguity regarding the product's out-of-the-box offerings, posing challenges for both sales teams and service designers.</p>
+    <dl class="facts">
+      <div><dt>Years</dt><dd>2022–2023</dd></div>
+      <div><dt>Product</dt><dd>AXIS</dd></div>
+      <div><dt>Tools</dt><dd>Figma, Confluence, Jira</dd></div>
+    </dl>
+  </header>
+  <div class="wrap"><div class="cover reveal"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system" data-zoom></div></div>
+  <div class="wrap case-body">
+    <nav class="toc" aria-label="On this page"></nav>
+    <div class="prose">
+      <section id="ds-problem" data-toc="The problem">
+        <span class="eyebrow">The problem</span>
+        <h2>Three gaps to close</h2>
+        <div class="cards">
+          <div class="card"><div class="ico"><img src="img/Valid.svg" alt=""></div><h3>Source of truth</h3><p>The design documentation became misaligned over time with the front-end apps.</p></div>
+          <div class="card"><div class="ico"><img src="img/Clarity.svg" alt=""></div><h3>Lack of clarity</h3><p>Created confusion for sales and solutions on what is available out of the box.</p></div>
+          <div class="card"><div class="ico"><img src="img/Code.svg" alt=""></div><h3>Outdated codebase</h3><p>Contained functional and visual inconsistencies between platforms.</p></div>
+        </div>
+      </section>
+
+      <section id="ds-users" data-toc="Users">
+        <span class="eyebrow">Users</span>
+        <h2>Who it's for</h2>
+        <div class="cards">
+          <div class="card"><img class="thumb" src="img/Sales.jpg" alt="" loading="lazy"><h3>Service Design and Solutions</h3><p>Utilising figma’s robust set of functionality such as properties and variants, allows service design and solution teams to quickly apply a clients branding. Allowing them to produce mock-ups for various scenarios effortlessly.</p></div>
+          <div class="card"><img class="thumb" src="img/Product.jpg" alt="" loading="lazy"><h3>Product Designers</h3><p>The Design System will be utilised as a framework for creating any new features. Ensuring consistency and saving time by allowing designers to quickly create and re-use components. Providing more time to create solutions than recreating and verifying existing functionality and components.</p></div>
+          <div class="card"><img class="thumb" src="img/Developer.jpg" alt="" loading="lazy"><h3>Developers</h3><p>Developers will use the design system as a reference point for the AXIS code re-write. Translating over the established token system to allow a smoother design to development transition. The design system will also contain spec sheets where needed to help guide developers, QA and project managers in the finer details of each component and template.</p></div>
+        </div>
+      </section>
+
+      <section id="ds-goals" data-toc="Goals">
+        <span class="eyebrow">Goals</span>
+        <h2>What success looked like</h2>
+        <div class="cards">
+          <div class="card"><span class="num">01</span><p>Reduce time for developers to reskin apps for clients.</p></div>
+          <div class="card"><span class="num">02</span><p>Reduce time for designers to produce mock-ups for clients.</p></div>
+          <div class="card"><span class="num">03</span><p>Reduce confusion about what changes are possible without further “customisation” of the apps.</p></div>
+          <div class="card"><span class="num">04</span><p>Improve consistency of the apps without introducing too much dev work.</p></div>
+        </div>
+      </section>
+
+      <section id="ds-approach" data-toc="Approach">
+        <span class="eyebrow">Approach</span>
+        <h2>Plan of attack</h2>
+        <figure class="reveal"><img src="img/DS_-_Plan_of_attack.png" alt="Approach summary" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">In the early stages of planning the design system, we decided our focus should begin with the responsive web app. The platform covers a range of breakpoints, including desktop, mobile and tablet sizes. Most of those components would translate over to native iOS and Android platforms. Followed by completing TV designs. This approach would also allow us to work out the structure of components built within figma on the most complex platform first.</p>
+      </section>
+
+      <section id="ds-balance" data-toc="Striking a balance">
+        <span class="eyebrow">Components</span>
+        <h2>Striking a balance</h2>
+        <p>Utilising Figma’s robust component functionality, it was important to determine a balance of flexibility, but also ensure the components don’t become so complex that they’re difficult to understand or update.</p>
+        <figure class="reveal"><img src="img/PM_FIgma.png" alt="Component properties in Figma" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="ds-docs" data-toc="Documentation">
+        <span class="eyebrow">Documentation</span>
+        <h2>Documentation</h2>
+        <p>Utilising Confluence and Jira, every page template had a detailed outline of all expected adjustments as well as their original values. This provided support for developers during the code re-write, product owners and managers in writing accurate tickets and QA with a reference for testing.</p>
+        <figure class="reveal"><img src="img/Jira.png" alt="Documentation in Jira" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="ds-early" data-toc="Early access">
+        <span class="eyebrow">Feedback</span>
+        <h2>Early access</h2>
+        <p>Providing early previews to the wider design teams within the company was a fundamental part in shaping the design system. Gathering their feedback and building a mutual understanding was a fundamental step in ensuring we spent our time wisely.</p>
+        <figure class="reveal"><img src="img/feedback.png" alt="Feedback from the wider design team" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="ds-outcomes" data-toc="Outcomes">
+        <span class="eyebrow">Outcomes</span>
+        <h2>Outcomes</h2>
+        <div class="figs">
+          <figure><img src="img/Skinning_Example.jpg" alt="Example of reskinning the apps for a client" loading="lazy" data-zoom><figcaption>Skinning example.</figcaption></figure>
+          <figure><img src="img/Navigation_Example.jpg" alt="Navigation example" loading="lazy" data-zoom><figcaption>Navigation example.</figcaption></figure>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="next"><div class="wrap"><a href="#/work/recurring-schedule"><div><span class="eyebrow">Next case study</span><h2>MTRIBES: Recurring Schedule</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
+</article>
+
+<!-- =================================================================== WORK: RECURRING SCHEDULE -->
+<article data-route="work/recurring-schedule" data-title="MTRIBES: Recurring Schedule — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Featured case study · MTRIBES</span>
+    <h1>MTRIBES: Recurring Schedule</h1>
+    <p class="lede">MTRIBES allows non-developers identify how users are engaging with UX in real-time, group customers into dynamic tribes based on behaviour, interest and demographic, create and publish personalised campaigns, and measure the results all without a line of code. the user can schedule to show, hide or display variants of their components within their apps using time, date and time zone parameters.</p>
+    <dl class="facts">
+      <div><dt>Years</dt><dd>2022–2023</dd></div>
+      <div><dt>Product</dt><dd>MTRIBES</dd></div>
+      <div><dt>Users</dt><dd>Content publishers</dd></div>
+    </dl>
+  </header>
+  <div class="wrap"><div class="cover tall reveal"><img src="img/recurring_schedule_header.jpg" alt="The recurring schedule feature" data-zoom></div></div>
+  <div class="wrap case-body">
+    <nav class="toc" aria-label="On this page"></nav>
+    <div class="prose">
+      <section id="rs-problem" data-toc="The problem">
+        <span class="eyebrow">The problem</span>
+        <h2>One schedule per experience</h2>
+        <p>MTRIBES only allowed it’s users to have a single schedule per experience. This complicates things for users when attempting to publish content with complex recurring schedules, forcing them to have to duplicate the content to create more granular schedules.</p>
+        <figure class="reveal"><img src="img/Single_Schedule.png" alt="The single schedule before this project" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="rs-why" data-toc="Why">
+        <span class="eyebrow">Why</span>
+        <h2>Why it mattered</h2>
+        <div class="cards">
+          <div class="card"><div class="ico"><img src="img/Feedback.svg" alt=""></div><h3>Productboard feedback</h3><p>Utilising Productboard, our clients were able to vote and comment on roadmap features. Allowing us to gauge the priority. The feedback also included a lot of valuable use cases that served as a foundation of our requirements.</p></div>
+          <div class="card"><div class="ico"><img src="img/Functionality.svg" alt=""></div><h3>Existing functionality</h3><p>During the initial build of MTRIBES, the scheduling functionality was created as an MVP solution, Only allowing single schedules. Resulting in clients duplicating of experiences in order to achieve flexibility. Complicating the workflow workflow for publishers using MTRIBES.</p></div>
+        </div>
+      </section>
+
+      <section id="rs-goals" data-toc="Goals">
+        <span class="eyebrow">Goals</span>
+        <h2>Goals</h2>
+        <div class="cards">
+          <div class="card"><span class="num">01</span><h3>Efficiency</h3><p>Enable users to schedule content publication in advance, reducing the need for manual intervention.</p></div>
+          <div class="card"><span class="num">02</span><h3>Flexibility</h3><p>Offer flexible scheduling options to accommodate diverse publishing needs.</p></div>
+          <div class="card"><span class="num">03</span><h3>Reliability</h3><p>Ensure the system is robust and dependable, accurately publishing content according to the specified schedule.</p></div>
+          <div class="card"><span class="num">04</span><h3>User satisfaction</h3><p>Enhance user satisfaction by simplifying the content management process and empowering users with greater control.</p></div>
+        </div>
+      </section>
+
+      <section id="rs-process" data-toc="The process">
+        <span class="eyebrow">Process</span>
+        <h2>The process</h2>
+        <p>We utilized a process based on the double diamond framework, adapted to fit our product teams pipeline. Involving relevant parties throughout each phase in our projects and features.</p>
+        <figure class="reveal"><img src="img/UX_Process_alt.jpg" alt="The design process, based on the Double Diamond" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="rs-understanding" data-toc="Understanding the problem">
+        <span class="eyebrow">Research</span>
+        <h2>Understanding the problem</h2>
+        <p>We gathered user feedback using Productboard. Allowing our clients to either vote on roadmap features or suggest ones based on their use cases and pain points. There was a high frequency of requests to expand our scheduling functionality by adding the ability to create recurring schedules.</p>
+        <p>We based our use-cases on client comments from Productboard. This allowed us to focus on creating a feature that solved a lot of customer pain points than simply adding recurring schedule mechanism without grasping the bigger picture.</p>
+        <h3>Users</h3>
+        <p>Key Audience of this feature would be content <strong>Publishers</strong> using MTRIBES.</p>
+        <div class="quote"><strong>“Our most active time for subscription sign-up is 30 mins before each live sports game starts, through to 45 mins into the game.”</strong><span>I want to display a short form content on the homepage at these times.</span></div>
+        <div class="quote"><strong>“Our short form content is most likely to be consumed between: 07:30 - 09:00 and 17:00 - 19:00, Monday till Friday.”</strong><span>I want to display a short form content on the homepage at these times.</span></div>
+        <div class="quote"><strong>“We have a sporting event that starts at 22:00 and finishes at 02:00 next morning. Then again between 08:00 and 12:00 every Saturday.”</strong><span>I want to display a banner on the homepage promoting whenever it is live.</span></div>
+      </section>
+
+      <section id="rs-market" data-toc="Market research">
+        <span class="eyebrow">Research</span>
+        <h2>Market research</h2>
+        <p>Research of various competitors and products using recurring schedule implementation was useful to reference different mechanisms. However, Each competitor’s or software’s recurring schedule functionality was built around a specific context. None of which provided examples of solving similar use-cases to ours.</p>
+      </section>
+
+      <section id="rs-ideation" data-toc="Ideation">
+        <span class="eyebrow">Ideation</span>
+        <h2>Ideation and exploration</h2>
+        <p>The design team got together early to workshop the direction of the feature, breaking down use-cases from our clients feedback, to creating some high level sketches on the whiteboard.</p>
+        <figure class="reveal"><img src="img/Mtribes_Ideation.jpg" alt="Whiteboard sketches" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">One of our early options referenced our in-house presentation manager used on our product AXIS. Presentation manager serves as the web interface used to manage content on AXIS. It also features a recurring schedule mechanism our customers were familiar with, so it served as a good baseline of what our customers would expect.</p>
+      </section>
+
+      <section id="rs-wires" data-toc="Wireframing">
+        <span class="eyebrow">Wireframing</span>
+        <h2>Wireframing</h2>
+        <p>After generating ideas and deciding on a few options to explore, I begin to create wireframes based on everything gathered and explored so far.</p>
+        <p>Below is an example my of wireframes covering key screens and states, accompanied by annotations outlining rules and behaviour.</p>
+        <figure class="reveal"><img src="img/MTRIBES-KEY.jpg" alt="Key screens and states" loading="lazy" data-zoom></figure>
+        <h3>Multiple recurrences</h3>
+        <p>Exploring nuances of having multiple recurrences as well as thinking through implications of removing them for an active experience.</p>
+        <figure class="reveal"><img src="img/MTRIBES-MULTI.jpg" alt="Multiple recurrences" loading="lazy" data-zoom></figure>
+        <figure class="reveal"><img src="img/MTRIBES-MAX.jpg" alt="Maximum number of recurrences" loading="lazy" data-zoom></figure>
+        <h3>Recurrence options</h3>
+        <p>Working through various mechanisms that satisfies our user needs. While utilising clear language and UI elements to ensure a reliable user experience.</p>
+        <figure class="reveal"><img src="img/MTRIBES-MECHANISMS.jpg" alt="Recurrence mechanisms" loading="lazy" data-zoom></figure>
+        <h3>Edge cases</h3>
+        <p>Exploring and documenting validation and errors the user may encounter.</p>
+        <figure class="reveal"><img src="img/MTRIBES-ERRORS.jpg" alt="Validation and errors" loading="lazy" data-zoom></figure>
+      </section>
+
+      <section id="rs-challenges" data-toc="Challenges">
+        <span class="eyebrow">Challenges</span>
+        <h2>Challenges</h2>
+        <div class="cards">
+          <div class="card"><h3>Separating scheduling section</h3><p>Currently living inside of the targeting section tab, the addition of extra components within the scheduling section would extend the panel’s height. We considered moving the scheduling mechanism to it’s own tab.</p></div>
+          <div class="card"><h3>Choosing mechanism and language</h3><p>Our scheduling mechanism needed to account for a few use cases where a schedule runs over midnight. In order to create a simple to use and clear UI the scheduler could trust, we needed to ensure we picked the right mechanism and language to accompany it.</p></div>
+          <div class="card"><h3>Supporting multiple recurrences</h3><p>One of our key requirements is allowing the operator to have multiple recurrences. Allowing cases such as showing content every Wednesday, as well as on the weekends. To ensure the operator doesn’t resort to duplicating their content to create another recurrence, we’ll need to create a unique mechanism that allows multiple recurrences while being easy to use.</p></div>
+          <div class="card"><h3>Distinction between a regular vs recurring schedule</h3><p>In order to reduce the number of one-off components across the app, we utilise existing components as much as possible. This introduces a slight complexity as the fields used for a single schedule, become the schedule time-frame when recurring schedule is enabled.</p></div>
+        </div>
+      </section>
+
+      <section id="rs-collab" data-toc="Collaboration">
+        <span class="eyebrow">Collaboration</span>
+        <h2>Cross discipline collaboration</h2>
+        <p>I'm a big believe in making sure not to work siloed from the ret of the team. Here is a brief summary of collaborations that have taken place during this feature, and across most others I've worked on.</p>
+        <ul>
+          <li>Design team check ins for transparency and retaining momentum.</li>
+          <li>Feasibility catch ups with developers to ensure we don’t detail solutions that won’t be possible with our current resources, tech or knowledge.</li>
+          <li>Sharing early explorations with developers and quality assurance teams to gather technical insights that help shape the solution.</li>
+          <li>Stakeholder check-ins to present progress, and discuss decisions that are backed with research and usability testing results, as well as addressing any feasibility concerns.</li>
+          <li>Kick-offs with relevant teams when designs are ready for development.</li>
+          <li>Working with copy writing teams to assist with release notes and help centre documentation.</li>
+          <li>Grabbing a good bite at the pub to decompress.</li>
+        </ul>
+      </section>
+
+      <section id="rs-dpd" data-toc="Process documentation">
+        <span class="eyebrow">Documentation</span>
+        <h2>Design process documentation</h2>
+        <p>Design process documents, internally referred to as DPD’s, serve as a point of reference of the decisions made to complete a feature. Future teams can use it to gather insights into decisions made, leaving ambiguity of why certain things were built the way they are. Giving further insights into any technical challenges, constraints, research and usability testing results that shaped the decisions and solutions.</p>
+        <ul>
+          <li>Separate to our UX documentation and any visual design specs provided to developers.</li>
+          <li>Includes goals, use-cases, competitor research, testing results, decisions and retrospectives, future considerations.</li>
+          <li>Learnings section also allows the designer or designers working on the feature to look back on and reflect what could be done differently in the future for a more efficient process.</li>
+        </ul>
+      </section>
+
+      <section id="rs-testing" data-toc="Usability testing">
+        <span class="eyebrow">Validation</span>
+        <h2>Facilitating usability testing</h2>
+        <p>Since there's only so much data to be gathered from competitor research. To back more complex decisions, usability is a great way to get insights into how functional our intended solution really is. However, despite the importance, not every project and feature will allow resources for testing.</p>
+        <figure class="reveal"><img src="img/usability.png" alt="The usability testing process" loading="lazy" data-zoom></figure>
+        <p style="margin-top:28px">Usability testing is a large topic, this section is a brief summary of my approach. I often reference Nielsen Norman group articles and studies to gain further insights for best practices: <a href="https://www.nngroup.com/articles/usability-testing-101/" target="_blank" rel="noopener">Usability Testing 101</a> and <a href="https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/" target="_blank" rel="noopener">Why You Only Need to Test with 5 Users</a>.</p>
+        <h3>Resourcing</h3>
+        <p>Usability testing can be a resource heavy task, we took the opportunity to combine the testing with 2 other ongoing features. Since all of the work took places on the same page as scheduling, it made sense for us to write the testing protocol so it lets us validate 2 other features in one go.</p>
+        <h3>Testing protocol</h3>
+        <p>Unfortunately I no longer have access to the final script we ran our testers through, however here’s a baseline we drafted prior:</p>
+        <figure class="reveal"><img src="img/Testing_proto.jpg" alt="Draft testing protocol" loading="lazy" data-zoom></figure>
+        <h3>Insights</h3>
+        <p>After synthesising the results using affinity mapping we gathered the following results:</p>
+        <ul>
+          <li>2 out of 5 Users didn’t initially understand the requirement to set a timeframe for the recurring schedule.</li>
+          <li>1 out of 5 Users didn’t find the terminology “same day” “next day” immediately clear.</li>
+          <li>All users completed setting a recurring schedule in the end.</li>
+        </ul>
+        <figure class="reveal"><img src="img/Affinity_mapping.jpg" alt="Affinity mapping of the results" loading="lazy" data-zoom></figure>
+        <h3>Digesting results</h3>
+        <p>Despite most of our participants successfully completing the recurring schedule, we saw room for improvement in the following areas:</p>
+        <ul>
+          <li>Improved copy to accompany each part of recurring schedule, proving context to the user.</li>
+          <li>Improved hierarchy to reduce user error.</li>
+        </ul>
+        <h3>Iterating based on testing results</h3>
+        <p>To address some of the concerns spotted in testing and reduce user error. We went ahead with re-arrangement of the section. Improving hierarchy by placing the recurrence fields first followed by setting of the timeframe the schedule will run for. This change brings the recurrence fields to focus first, where previously the user may have filled out the timeframe first and potentially ignored the recurrence fields resulting in an error. This would also create a visual distinction between the one-off and recurring schedule.</p>
+      </section>
+
+      <section id="rs-outcomes" data-toc="Outcomes">
+        <span class="eyebrow">Outcomes</span>
+        <h2>Outcomes</h2>
+        <p>The addition of recurring schedule allowed clients to maintain a cleaner UI by reducing the need to duplicate experiences for each schedule, in turn simplify their workflow.</p>
+        <h3>Revised layout after testing</h3>
+        <ul><li>Improved hierarchy</li><li>Additional copy providing further context of each section.</li><li>Revised visual design on field components to reduce excess height.</li></ul>
+        <figure class="reveal"><img src="img/Post_testing_layout.jpg" alt="Revised layout after testing" loading="lazy" data-zoom></figure>
+        <h3>New scheduling in-situ</h3>
+        <figure class="reveal"><img src="img/Recurring_schedule.jpg" alt="The new scheduling in the app" loading="lazy" data-zoom></figure>
+        <div class="figs">
+          <figure><img src="img/pre_testing_layout.jpg" alt="Layout before usability testing" loading="lazy" data-zoom><figcaption>Layout before usability testing.</figcaption></figure>
+          <figure><img src="img/Schedule_prior.jpg" alt="Scheduling before this project" loading="lazy" data-zoom><figcaption>Scheduling before this project.</figcaption></figure>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="next"><div class="wrap"><a href="#/work/axis"><div><span class="eyebrow">Next</span><h2>AXIS</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
+</article>
+
+<!-- =================================================================== ILLUSTRATIONS -->
+<div data-route="illustrations" data-title="Illustrations — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Illustrations</span>
+    <h1>Behind the dystopia</h1>
+    <p class="lede">Digital illustrations: cinematic scenes, mostly built in 3D and painted over.</p>
+  </header>
+  <div class="wrap">
+    <div class="gallery" id="gallery1">
+      <a class="full" href="img/01-HUNT.jpg"><img src="img/01-HUNT.jpg" alt="Hunt" loading="lazy"><span class="label">001 · Hunt</span></a>
+      <a class="full" href="img/02-AMBUSH.jpg"><img src="img/02-AMBUSH.jpg" alt="Ambush" loading="lazy"><span class="label">002 · Ambush</span></a>
+      <a class="full" href="img/03-MOMENTS.jpg"><img src="img/03-MOMENTS.jpg" alt="Moments" loading="lazy"><span class="label">003 · Moments</span></a>
+      <a class="full" href="img/04-FACILITY.jpg"><img src="img/04-FACILITY.jpg" alt="Facility" loading="lazy"><span class="label">004 · Facility</span></a>
+      <a class="full" href="img/05-SETTINGS.jpg"><img src="img/05-SETTINGS.jpg" alt="Settings" loading="lazy"><span class="label">005 · Settings</span></a>
+      <a href="img/H-SPECOP.jpg"><img src="img/H-SPECOP.jpg" alt="Spec op" loading="lazy"><span class="label">Spec op</span></a>
+      <a href="img/H-HACK.jpg"><img src="img/H-HACK.jpg" alt="Hack" loading="lazy"><span class="label">Hack</span></a>
+      <a href="img/H-BIEDRONKA.jpg"><img src="img/H-BIEDRONKA.jpg" alt="Biedronka" loading="lazy"><span class="label">Biedronka</span></a>
+      <a href="img/H-FREQUENCY.jpg"><img src="img/H-FREQUENCY.jpg" alt="Frequency" loading="lazy"><span class="label">Frequency</span></a>
+      <a href="img/H-ORB.jpg"><img src="img/H-ORB.jpg" alt="Orb" loading="lazy"><span class="label">Orb</span></a>
+      <a href="img/H-ORB-DIST.jpg"><img src="img/H-ORB-DIST.jpg" alt="Orb, distant" loading="lazy"><span class="label">Orb (distant)</span></a>
+      <a href="img/Fugative_pt2_-studio.jpg"><img src="img/Fugative_pt2_-studio.jpg" alt="Fugitive, part 2" loading="lazy"><span class="label">Fugitive · Part 2</span></a>
+      <a href="img/Fugative_pt3-studio.jpg"><img src="img/Fugative_pt3-studio.jpg" alt="Fugitive, part 3" loading="lazy"><span class="label">Fugitive · Part 3</span></a>
+      <a href="img/Fugative_Pt4-studio_1.jpg"><img src="img/Fugative_Pt4-studio_1.jpg" alt="Fugitive, part 4" loading="lazy"><span class="label">Fugitive · Part 4</span></a>
+      <a href="img/Fugative_Pt5-studio_1.jpg"><img src="img/Fugative_Pt5-studio_1.jpg" alt="Fugitive, part 5" loading="lazy"><span class="label">Fugitive · Part 5</span></a>
+      <a href="img/M-Playground.jpg"><img src="img/M-Playground.jpg" alt="Playground" loading="lazy"><span class="label">Playground</span></a>
+      <a href="img/M-Arthur.jpg"><img src="img/M-Arthur.jpg" alt="Arthur" loading="lazy"><span class="label">Arthur</span></a>
+      <a href="img/M-Ruin.jpg"><img src="img/M-Ruin.jpg" alt="Ruin" loading="lazy"><span class="label">Ruin</span></a>
+      <a href="img/M-Ramen.jpg"><img src="img/M-Ramen.jpg" alt="Ramen" loading="lazy"><span class="label">Ramen</span></a>
+    </div>
+
+    <div class="ill-note reveal">
+      <div><span class="eyebrow">Process</span><h2>How they're made</h2></div>
+      <div>
+        <p>The digital illustrations are created using a range of software such as Procreate, Photoshop, Affinity Photo and Blender. Almost all 3D assets used in the scenes are created by me. While I have explored various AI generative software, none of the artworks present on this page are made using tools such as stablediffusion, mid journey etc.</p>
+        <div class="tools"><span>Procreate</span><span>Photoshop</span><span>Affinity Photo</span><span>Blender</span></div>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery2" style="padding-bottom:clamp(64px,9vw,120px)">
+      <a href="img/Blue-studio_1.jpg"><img src="img/Blue-studio_1.jpg" alt="Blue" loading="lazy"><span class="label">Blue</span></a>
+      <a href="img/Red_01-studio_1.jpg"><img src="img/Red_01-studio_1.jpg" alt="Red" loading="lazy"><span class="label">Red</span></a>
+      <a href="img/S-Targa.jpg"><img src="img/S-Targa.jpg" alt="Targa" loading="lazy"><span class="label">Targa</span></a>
+      <a href="img/S-Targa2.jpg"><img src="img/S-Targa2.jpg" alt="Targa, second view" loading="lazy"><span class="label">Targa II</span></a>
+      <a href="img/S-Laneway.jpg"><img src="img/S-Laneway.jpg" alt="Laneway" loading="lazy"><span class="label">Laneway</span></a>
+      <a href="img/S-Blok.jpg"><img src="img/S-Blok.jpg" alt="Blok" loading="lazy"><span class="label">Blok</span></a>
+      <a href="img/S-Rubbish.jpg"><img src="img/S-Rubbish.jpg" alt="Rubbish" loading="lazy"><span class="label">Rubbish</span></a>
+      <a href="img/S-AlienScape.jpg"><img src="img/S-AlienScape.jpg" alt="Alien scape" loading="lazy"><span class="label">Alien scape</span></a>
+      <a href="img/S-Factory.jpg"><img src="img/S-Factory.jpg" alt="Factory" loading="lazy"><span class="label">Factory</span></a>
+      <a href="img/S-Highway.jpg"><img src="img/S-Highway.jpg" alt="Highway" loading="lazy"><span class="label">Highway</span></a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Contact sits at the end of every page -->
+<section class="contact" id="contact">
+  <div class="wrap reveal">
+    <span class="eyebrow">Contact</span>
+    <h2 style="margin-top:18px">Let's get<br>in contact<span>.</span></h2>
+    <p>While this website summarises my experience, it only scratches the surface. Let's connect so I can dive deeper and explain how I benefit your development process, team, and company.</p>
+    <div class="btn-row">
+      <a class="btn primary" href="mailto:marekheiland@gmail.com"><svg><use href="#i-mail"/></svg>E-mail</a>
+      <a class="btn" href="https://www.linkedin.com/in/marek-heiland-48b8a0b9" target="_blank" rel="noopener"><svg><use href="#i-in"/></svg>LinkedIn</a>
+      <a class="btn" href="files/CV.pdf" target="_blank" rel="noopener"><svg><use href="#i-doc"/></svg>CV</a>
+    </div>
+  </div>
+</section>
+<footer class="site-footer">
+  <div class="wrap mono"><span>© <span id="year">2026</span> Marek Heiland</span><span>Sydney, Australia</span></div>
+</footer>
+
+<!-- A/B lab: a floating button that opens the page variations -->
+<button class="lab-btn" id="labBtn" aria-label="Page variations" aria-expanded="false" aria-controls="labPanel">
+  <i class="ph-fill ph-test-tube" aria-hidden="true"></i><span class="dot"></span>
+</button>
+<div class="lab-panel" id="labPanel" role="dialog" aria-labelledby="labTitle" hidden>
+  <div class="lab-top">
+    <div><h2 id="labTitle">Page variations</h2><span class="mono">A / B lab</span></div>
+    <button class="lab-x" id="labClose" aria-label="Close"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+  </div>
+  <div class="lab-speed">
+    <label for="labSpeed">Animation speed</label>
+    <input id="labSpeed" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" aria-describedby="labSpeedOut">
+    <span class="out" id="labSpeedOut"></span>
+  </div>
+  <div id="labItems"></div>
+  <div class="lab-foot">Your choices are remembered in this browser.</div>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <img alt="">
+  <button class="lb-btn lb-close" aria-label="Close"><svg><use href="#i-x"/></svg></button>
+  <button class="lb-btn lb-prev" aria-label="Previous image"><svg><use href="#i-left"/></svg></button>
+  <button class="lb-btn lb-next" aria-label="Next image"><svg><use href="#i-right"/></svg></button>
+  <span class="lb-count"></span>
+</div>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const header = $('#header');
+  const routes = $$('[data-route]');
+  const html = document.documentElement;
+  let introRunning = false, introTimers = [], introFx = null;
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ---- Theme (dark by default; the choice is remembered when storage allows) ---- */
+  const themeBtn = $('#themeBtn');
+  function setTheme(t) {
+    document.documentElement.dataset.theme = t;
+    themeBtn.innerHTML = `<svg><use href="#i-${t === 'dark' ? 'sun' : 'moon'}"/></svg>`;
+    themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  let saved = null; try { saved = localStorage.getItem('mh-theme'); } catch (e) {}
+  setTheme(saved === 'light' ? 'light' : 'dark');
+  themeBtn.addEventListener('click', () => {
+    const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    setTheme(t); try { localStorage.setItem('mh-theme', t); } catch (e) {}
+  });
+
+  /* ---- Mobile menu ---- */
+  const nav = $('#nav'), menuBtn = $('#menuBtn');
+  const closeMenu = () => { nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); menuBtn.innerHTML = '<svg><use href="#i-menu"/></svg>'; };
+  menuBtn.addEventListener('click', () => {
+    const open = !nav.classList.contains('open');
+    nav.classList.toggle('open', open); menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.innerHTML = `<svg><use href="#i-${open ? 'x' : 'menu'}"/></svg>`;
+  });
+
+  /* ---- Header turns solid once the page scrolls ---- */
+  const onScroll = () => header.classList.toggle('solid', window.scrollY > 40 || nav.classList.contains('open'));
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- Scroll-in reveals ---- */
+  // Units are what the scroll observer watches. In case studies, runs of consecutive text are
+  // wrapped in .gx-run so each run comes in as one framed piece in "Glitched loading" B.
+  $$('.prose > section').forEach((sec) => {
+    let run = null;
+    [...sec.children].forEach((c) => {
+      if (c.matches('figure, .figs, .cards, .logos, .work-grid')) { run = null; return; }
+      if (!run) { run = document.createElement('div'); run.className = 'gx-run'; c.before(run); }
+      run.appendChild(c);
+    });
+  });
+  const UNIT_SEL = '.reveal, .gx-run, .prose .figs, .prose .cards, .prose .logos, .prose .work-grid, .gallery a';
+  const MEDIA = 'img, .media, .exp-media, .ico, .logos > div, .strip > a';
+  const HEAD = '.eyebrow, h1, h2, h3, .num, .tag, dt';
+  const PART = `${MEDIA}, ${HEAD}, dd, p, li, .quote, .callout, figcaption, .btn, .arrow-link, .tools span`;
+  const kindOf = (p) => p.matches(MEDIA) ? 0 : p.matches(HEAD) ? 1 : 2; // image, heading, body
+  const units = $$(UNIT_SEL);
+  units.forEach((u) => {
+    u.classList.add('gx-u');
+    const found = u.matches(PART) ? [u] : $$(PART, u);
+    const parts = found.filter((p) => !found.some((q) => q !== p && q.contains(p)));
+    // Images first. Text runs keep reading order after that; other units go heading, then body.
+    u._parts = parts.map((p, i) => ({ p, i, k: kindOf(p) }))
+      .sort((a, b) => (u.matches('.gx-run') ? (a.k === 0 ? 0 : 1) - (b.k === 0 ? 0 : 1) : a.k - b.k) || a.i - b.i)
+      .map((x) => x.p);
+    u._parts.forEach((p) => { p.classList.add('gx-p'); if (kindOf(p) === 0) p.classList.add('gx-m'); });
+  });
+
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.filter((e) => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
+      .forEach((e) => { io.unobserve(e.target); revealNow(e.target); });
+  }, { rootMargin: '0px 0px -10% 0px' }) : null;
+  units.forEach((u) => io ? io.observe(u) : u.classList.add('in'));
+
+  // A: add .in (CSS fades .reveal units up). B: queue the unit's sequence, so units that
+  // arrive together play one after another.
+  const BASE_GX = 0.8;        // pace of "Glitched loading" B: 1 = brisk, bigger = slower
+  let GX = BASE_GX;          // BASE_GX divided by the panel's animation speed
+  const BASE_GXC = 1;         // pace of "Glitched loading" C (clean scan)
+  let GXC = BASE_GXC;
+  let gxGen = 0, gxQueue = [], gxBusy = false;
+  function revealNow(u) {
+    if (u.classList.contains('in') || u._gxPending) return;
+    if (!html.classList.contains('gl-b') && !html.classList.contains('gl-c')) { u.classList.add('in'); return; }
+    u._gxPending = true;
+    gxQueue.push(u);
+    if (!gxBusy) gxPump();
+  }
+  // Play queued units one after another. A unit that has scrolled out of view by its turn
+  // just appears, so it doesn't hold up the ones on screen.
+  function gxPump() {
+    const u = gxQueue.shift();
+    if (!u) { gxBusy = false; return; }
+    gxBusy = true;
+    u._gxPending = false;
+    u.classList.add('in');
+    const r = u.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight || !r.width) { u._parts.forEach((p) => p.classList.add('in')); gxPump(); return; }
+    const clean = html.classList.contains('gl-c');
+    clean ? cleanUnit(u) : glitchUnit(u);
+    const gen = gxGen;
+    setTimeout(() => { if (gen === gxGen) gxPump(); }, clean ? 220 * GXC : 520 * GX);
+  }
+  // Put every unit back to its hidden state and watch it again (pending sequences are dropped).
+  function rearmReveals() {
+    gxGen++; gxQueue = []; gxBusy = false;
+    units.forEach((u) => {
+      u.classList.remove('in'); u._gxPending = false;
+      u._parts.forEach((p) => p.classList.remove('in'));
+      if (io) { io.unobserve(u); io.observe(u); }
+    });
+    gxLayer.replaceChildren();
+  }
+
+  /* ---- Table of contents for case studies ---- */
+  let tocObserver = null;
+  function buildToc(page) {
+    const toc = $('.toc', page); if (!toc) return;
+    const secs = $$('.prose > section[data-toc]', page);
+    toc.innerHTML = '<span class="eyebrow">Contents</span>' + secs.map((s) => `<a href="#${s.id}" data-id="${s.id}">${s.dataset.toc}</a>`).join('');
+    $$('a', toc).forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); document.getElementById(a.dataset.id).scrollIntoView({ behavior: 'smooth' }); }));
+    tocObserver?.disconnect();
+    tocObserver = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) $$('a', toc).forEach((a) => a.classList.toggle('on', a.dataset.id === e.target.id)); });
+    }, { rootMargin: '-35% 0px -60% 0px' });
+    secs.forEach((s) => tocObserver.observe(s));
+  }
+
+  /* ---- Router: #/, #/work, #/work/<case>, #/illustrations, #/about, #/contact ---- */
+  function route() {
+    // Only "#/..." hashes are routes; others (like the skip link's #main) are plain anchors.
+    if (location.hash && !location.hash.startsWith('#/')) return;
+    const hash = location.hash.replace(/^#\/?/, '');
+    // In-page anchors on home (#/work, #/about, #/contact) and plain #ids used by the skip link.
+    const anchors = { work: 'work', about: 'about', contact: 'contact' };
+    let name = hash, anchor = null;
+    if (!hash || anchors[hash] || !routes.some((r) => r.dataset.route === hash)) {
+      if (anchors[hash]) anchor = anchors[hash];
+      name = 'home';
+    }
+    routes.forEach((r) => r.classList.toggle('active', r.dataset.route === name));
+    const page = routes.find((r) => r.dataset.route === name);
+    document.title = page.dataset.title.replace('&amp;', '&');
+    document.body.classList.toggle('on-hero', name === 'home');
+    const navKey = name.startsWith('work') ? 'work' : name === 'home' ? (anchor || 'home') : name;
+    $$('.nav a').forEach((a) => a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+    closeMenu();
+    if (name !== 'home' && introRunning) cancelIntro();
+    buildToc(page);
+    if (anchor) requestAnimationFrame(() => document.getElementById(anchor).scrollIntoView({ behavior: 'smooth' }));
+    else window.scrollTo({ top: 0, behavior: 'instant' });
+    units.forEach((u) => { if (page.contains(u) && u.getBoundingClientRect().top < innerHeight) revealNow(u); });
+    onScroll();
+    hero(name === 'home');
+  }
+  window.addEventListener('hashchange', route);
+
+  /* ---- Home hero slideshow ---- */
+  const slides = $$('#heroSlides img');
+  const labels = ['004 · Facility', '001 · Hunt', '002 · Ambush', '003 · Moments', '005 · Settings'];
+  const dots = $('#heroDots');
+  slides.forEach((_, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', `Show illustration ${i + 1}`); b.onclick = () => { show(i); restart(); }; dots.appendChild(b); });
+  let cur = 0, timer = null;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(i) {
+    cur = (i + slides.length) % slides.length;
+    slides.forEach((s, j) => s.classList.toggle('on', j === cur));
+    $$('button', dots).forEach((d, j) => d.classList.toggle('on', j === cur));
+    $('#heroLabel').textContent = labels[cur];
+  }
+  function restart() { clearInterval(timer); if (!reduce && !document.hidden && !introRunning) timer = setInterval(() => show(cur + 1), 7000); }
+  function hero(on) { if (on) restart(); else clearInterval(timer); }
+  document.addEventListener('visibilitychange', () => hero(!document.hidden && $('[data-route="home"]').classList.contains('active')));
+  show(0);
+
+  /* ---- Lightbox: any [data-zoom] image, or links inside a .gallery ---- */
+  const lb = $('#lightbox'), lbImg = $('img', lb), lbCount = $('.lb-count', lb);
+  let set = [], idx = 0, lastFocus = null;
+  function open(list, i) {
+    set = list; idx = i; lastFocus = document.activeElement;
+    lb.classList.add('open'); document.body.style.overflow = 'hidden'; paint(); $('.lb-close', lb).focus();
+  }
+  function paint() {
+    const it = set[idx]; lbImg.src = it.src; lbImg.alt = it.alt || '';
+    lbCount.textContent = set.length > 1 ? `${idx + 1} / ${set.length}` : '';
+    $('.lb-prev', lb).hidden = $('.lb-next', lb).hidden = set.length < 2;
+  }
+  function close() { lb.classList.remove('open'); document.body.style.overflow = ''; lbImg.src = ''; lastFocus?.focus(); }
+  const step = (d) => { idx = (idx + d + set.length) % set.length; paint(); };
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('.gallery a');
+    if (g) {
+      e.preventDefault();
+      const page = g.closest('[data-route]');
+      const items = $$('.gallery a', page).map((a) => ({ src: a.getAttribute('href'), alt: $('img', a).alt }));
+      open(items, $$('.gallery a', page).indexOf(g)); return;
+    }
+    const z = e.target.closest('img[data-zoom]');
+    if (z) {
+      const page = z.closest('[data-route]');
+      const imgs = $$('img[data-zoom]', page);
+      open(imgs.map((im) => ({ src: im.getAttribute('src'), alt: im.alt })), imgs.indexOf(z));
+    }
+  });
+  $('.lb-close', lb).onclick = close;
+  $('.lb-prev', lb).onclick = () => step(-1);
+  $('.lb-next', lb).onclick = () => step(1);
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (!lb.classList.contains('open')) { if (e.key === 'Escape') { closeMenu(); closeLab(true); } return; }
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'ArrowRight') step(1);
+    else if (e.key === 'Tab') { const f = $$('button:not([hidden])', lb); const i = f.indexOf(document.activeElement); e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); }
+  });
+  let tx = null;
+  lb.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', (e) => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1); tx = null; });
+
+  /* =====================================================================
+     Landing animation, variant B: a boot sequence. The hero is black for a second
+     with a few HUD readouts, the image powers on like a screen, then the logo, nav,
+     text and buttons glitch in one after another while scan bits flicker around.
+     ===================================================================== */
+  const heroEl = $('.hero'), heroSlides = $('#heroSlides');
+  const GLYPHS = '<>/\\|_-=+*#0123456789ABCDEFXZ';
+  const HUD_TEXT = ['SYS.BOOT', 'MH//OS 2.6', 'SYNC 0x7F3A', 'LINK 98.2%', 'RENDER PASS 04', 'FRAME 0024', 'SIG LOCK', 'MEM 4096K',
+    'NODE SYD-01', 'DECRYPT', 'GRID 12/12', 'ΔT 16.6MS', 'CH 03 // IN', 'CAL OK'];
+  const pick = (a) => a[Math.random() * a.length | 0];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  // One knob for the whole sequence's pace: 1 = the original 3.8s, 1.35 ≈ 5.2s.
+  // The CSS animation lengths below (crt-on, glitch-in, glitch-soft, sweep) are scaled to match.
+  const BASE_SLOW = 1.35;
+  let SLOW = BASE_SLOW;       // BASE_SLOW divided by the panel's animation speed
+  const later = (ms, fn) => introTimers.push(setTimeout(fn, ms * SLOW));
+
+  function hud(kind, x, y, life, extra = {}) {
+    if (!introFx) return;
+    life *= SLOW;
+    const d = document.createElement('div');
+    d.className = 'hud ' + kind + (extra.acc ? ' acc' : '');
+    d.style.left = typeof x === 'number' ? x + '%' : x;
+    d.style.top = typeof y === 'number' ? y + '%' : y;
+    d.style.setProperty('--life', life + 'ms');
+    if (extra.w) d.style.width = extra.w + 'px';
+    if (extra.h) d.style.height = extra.h + 'px';
+    if (extra.text) d.textContent = extra.text;
+    introFx.appendChild(d);
+    setTimeout(() => d.remove(), life + 50);
+  }
+  // A bracket box that frames an element just before it glitches in.
+  function frame(el, life = 420) {
+    const r = el.getBoundingClientRect(), h = heroEl.getBoundingClientRect();
+    if (!r.width || r.top - h.top > h.height || r.top < h.top - 80) return;
+    hud('box', (r.left - h.left - 8) + 'px', (r.top - h.top - 6) + 'px', life, { w: r.width + 16, h: r.height + 12, acc: true });
+  }
+  function randomBit() {
+    const k = Math.random();
+    const x = rnd(4, 88), y = rnd(8, 92), life = rnd(260, 700);
+    if (k < .45) hud('', x, y, life, { text: pick(HUD_TEXT), acc: Math.random() < .35 });
+    else if (k < .6) hud('bar', x, y, life, { w: rnd(40, 140), acc: Math.random() < .5 });
+    else if (k < .75) hud('rule', rnd(0, 40), y, life, { w: rnd(200, 600) });
+    else if (k < .88) hud('cross', x, y, life);
+    else hud('box', x, y, life, { w: rnd(40, 120), h: rnd(24, 70) });
+  }
+  function scramble(el, dur, alive = () => introRunning) {
+    const node = [...el.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+    if (!node) return;
+    const final = el._final ? el._final[1] : node.textContent;
+    el._final = [node, final];
+    const at = [...final].map((c, i) => (i / final.length) * dur * .55 + Math.random() * dur * .45);
+    const t0 = performance.now();
+    const step = (now) => {
+      const t = now - t0; let s = '', done = true;
+      for (let i = 0; i < final.length; i++) {
+        const c = final[i];
+        if (c === ' ' || t >= at[i]) s += c; else { done = false; s += pick(GLYPHS); }
+      }
+      node.textContent = s;
+      if (!done && alive()) el._raf = requestAnimationFrame(step); else node.textContent = final;
+    };
+    el._raf = requestAnimationFrame(step);
+  }
+
+  /* ---- Glitched loading (scroll variant B): effects around one piece as it glitches in ---- */
+  const gxLayer = document.createElement('div');
+  gxLayer.className = 'gx-layer';
+  document.body.appendChild(gxLayer);
+  let gxCount = 0;
+  function gxBit(cls, x, y, life, w, h, text) {
+    const d = document.createElement('div');
+    d.className = cls;
+    Object.assign(d.style, { left: x + 'px', top: y + 'px' });
+    d.style.setProperty('--life', life + 'ms');
+    if (w) d.style.width = w + 'px';
+    if (h) d.style.height = h + 'px';
+    if (text) d.textContent = text;
+    gxLayer.appendChild(d);
+    setTimeout(() => d.remove(), life + 60);
+    return d;
+  }
+  // One unit's sequence (all times scaled by GX):
+  //   1. scattered scans flicker in and around where the unit will appear,
+  //   2. (a frame used to draw around it here; switched off),
+  //   3. its parts glitch in one by one: images, then headings (which decode), then body.
+  function glitchUnit(u) {
+    const r = u.getBoundingClientRect();
+    if (!r.width) { u._parts.forEach((p) => p.classList.add('in')); return; }
+    const gen = gxGen;
+    const at = (ms, fn) => setTimeout(() => { if (gen === gxGen) fn(); }, ms * GX);
+    const x = r.left + scrollX, y = r.top + scrollY, w = r.width, h = r.height;
+    gxCount++;
+
+    // Beat 1: scattered scans.
+    const scans = w > 320 ? 4 : 2;
+    for (let i = 0; i < scans; i++) at(i * 80, () => scanBit(x, y, w, h));
+
+    // Beat 3 is planned first, so the frame knows how long to stay up.
+    let t = 620, prev = null;
+    const plan = u._parts.map((p) => {
+      const k = kindOf(p);
+      if (prev !== null && k !== prev) t += 170;          // a breath between images, headings, body
+      const start = t;
+      t += k === 0 ? 240 : k === 1 ? 200 : p.matches('li, .tools span') ? 75 : 140;
+      prev = k;
+      return { p, k, start };
+    });
+
+    // (Beat 2, the frame, is switched off in B for now.)
+
+    // Beat 3: the parts.
+    plan.forEach(({ p, k, start }) => at(start, () => {
+      p.classList.add('in');
+      if (k === 0) sweep(p);
+      if (p.matches('h1, h2, h3')) scramble(p, 900 * GX, () => true);
+    }));
+  }
+  // A short-lived readout, crosshair, bar or rule somewhere in or just around a unit.
+  function scanBit(x, y, w, h) {
+    const px = x + rnd(-40, w + 10), py = y + rnd(-20, Math.min(h, innerHeight) + 10), life = rnd(600, 950) * GX, k = Math.random();
+    if (k < .4) gxBit('hud' + (Math.random() < .6 ? ' sky' : ''), px, py, life, 0, 0, pick(HUD_TEXT));
+    else if (k < .6) gxBit('hud cross sky', px, py, life);
+    else if (k < .8) gxBit('hud bar sky', px, py, life, rnd(30, 110));
+    else gxBit('hud rule sky', x, py, life, w);
+  }
+  // Variant C, "clean scan": corner brackets and a quiet readout fade in, and at 450ms the
+  // parts come in (all within ~350ms more), in the same order as B (images, headings, body):
+  // text glitches in and headings decode, images fade in slowly. The frame then fades away.
+  function cleanUnit(u) {
+    const r = u.getBoundingClientRect();
+    if (!r.width) { u._parts.forEach((p) => p.classList.add('in')); return; }
+    const gen = gxGen;
+    const at = (ms, fn) => setTimeout(() => { if (gen === gxGen) fn(); }, ms * GXC);
+    const x = r.left + scrollX, y = r.top + scrollY, w = r.width, h = r.height;
+    const n = u._parts.length, start = 450;
+    const step = n > 1 ? Math.min(70, 350 / (n - 1)) : 0;
+    const hold = (start + step * Math.max(0, n - 1) + 900) * GXC;
+    gxCount++;
+    gxBit('gx-corners', x - 6, y - 6, hold, w + 12, h + 12);
+    if (w > 220) gxBit('hud sky gx-read gx-quiet', x + w, y - 20, hold, 0, 0,
+      `${pick(['SCAN', 'LOAD', 'SYNC'])} ${String(gxCount).padStart(2, '0')}`);
+    u._parts.forEach((p, i) => at(start + i * step, () => {
+      p.classList.add('in');
+      if (p.matches('h1, h2, h3')) scramble(p, 600 * GXC, () => true);
+    }));
+  }
+
+  // A scan line sweeping down an image as it comes in.
+  function sweep(p) {
+    const r = p.getBoundingClientRect();
+    if (r.height < 40) return;
+    const wrap = gxBit('gx-scan-wrap', r.left + scrollX, r.top + scrollY, 1800 * GX, r.width, Math.min(r.height, innerHeight * 1.5));
+    wrap.innerHTML = '<div class="gx-scan"></div>';
+  }
+
+  function cancelIntro() {
+    introTimers.forEach(clearTimeout); introTimers = [];
+    $$('[data-intro]').forEach((el) => {
+      el.classList.remove('in', 'soft');
+      if (el._raf) cancelAnimationFrame(el._raf);
+      if (el._final) el._final[0].textContent = el._final[1];
+    });
+    introFx?.remove(); introFx = null;
+    heroSlides.classList.remove('boot'); heroEl.classList.remove('shade');
+    html.classList.remove('intro-b');
+    introRunning = false;
+  }
+
+  function runIntroB() {
+    cancelIntro();
+    if (reduce) return;
+    introRunning = true; clearInterval(timer);
+    clearAmbient();   // no held ambient scan sits over a replayed boot
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    show(0);
+    html.classList.add('intro-b');
+    void heroSlides.offsetWidth; // restart the CSS animations on a replay
+    introFx = document.createElement('div');
+    introFx.className = 'intro-fx';
+    introFx.innerHTML = '<div class="lines"></div>';
+    heroEl.appendChild(introFx);
+
+    // 0–2.5s: black screen, the boot readout and a loading bar in the middle, with readouts
+    // ticking over beneath them. HOLD is how much longer than the original 1s the black lasts.
+    const HOLD = 1500 / BASE_SLOW;   // 1.5s of real time at normal speed (later() multiplies by SLOW)
+    later(120, () => hud('', 'calc(50% - 90px)', 'calc(50% - 22px)', 900 + HOLD, { text: 'MH//OS — INITIALISING', acc: true }));
+    later(220, () => hud('bar', 'calc(50% - 90px)', 'calc(50% + 2px)', 760 + HOLD, { w: 180, acc: true }));
+    later(300, () => hud('cross', 6, 12, 600));
+    [420, 900, 1350, 1750].forEach((ms, i) =>
+      later(ms, () => hud('', 'calc(50% - 90px)', 'calc(50% + 14px)', i === 3 ? 330 : 420, { text: pick(HUD_TEXT) })));
+    later(520, () => hud('cross', 92, 84, 480));
+    later(1100, () => hud('cross', 88, 16, 480));
+    later(1550, () => hud('cross', 9, 80, 420));
+    later(640 + HOLD, () => hud('rule', 0, 50, 260, { w: innerWidth }));
+
+    // 2.5s: the image powers on, the shade fades in, a sweep bar passes down the screen.
+    later(1000 + HOLD, () => {
+      heroSlides.classList.add('boot'); heroEl.classList.add('shade');
+      const s = document.createElement('div'); s.className = 'sweep'; introFx?.appendChild(s);
+    });
+    // Scan bits flicker around while things load in.
+    for (let i = 0; i < 16; i++) later(rnd(950, 2900) + HOLD, randomBit);
+
+    // 2.85s on: header, then hero copy and buttons, each framed and glitched in.
+    const order = [
+      ...$$('#header [data-intro]').filter((el) => el.offsetParent !== null),
+      ...$$('.hero [data-intro]'),
+    ];
+    let t = 1350 + HOLD;
+    order.forEach((el) => {
+      const big = el.matches('h1, .eyebrow, .hero-intro p, .btn-row .btn.primary');
+      if (big) later(t - 90, () => frame(el, el.tagName === 'H1' ? 520 : 380));
+      later(t, () => {
+        el.classList.add('in');
+        if (el.dataset.intro === 'soft') el.classList.add('soft');
+        if (el.hasAttribute('data-scramble')) scramble(el, (el.tagName === 'H1' ? 760 : 620) * SLOW);
+      });
+      t += el.closest('#header') ? 45 : el.tagName === 'H1' ? 170 : 90;
+    });
+
+    later(t + 500, () => introFx?.classList.add('out'));
+    later(t + 1100, () => { cancelIntro(); restart(); });
+  }
+
+  /* ---- Landing B, after the boot: ambient scans over the hero image ----
+     Bursts of 2–3 readouts, links, crosshairs, bars or brackets within 1–2s. The last bit of a
+     burst stays on until the next burst starts (4–8s later), then flickers out. Bits sit over
+     the image (right and upper area), clear of the intro text. A burst is skipped (and retried
+     shortly) while the intro plays, off Home, with the hero scrolled away or the tab hidden.
+     Timings follow the panel's animation speed. */
+  const ambFx = document.createElement('div');
+  ambFx.className = 'intro-fx ambient-fx';
+  heroEl.appendChild(ambFx);
+  let ambOn = false, ambTimer = null, ambHeld = null;
+  function ambientStart() { if (ambOn || reduce) return; ambOn = true; ambientNext(rnd(1500, 3000)); }
+  function ambientStop() { ambOn = false; clearTimeout(ambTimer); clearAmbient(); }
+  function clearAmbient() { ambFx.replaceChildren(); ambHeld = null; }
+  function ambientNext(ms) { clearTimeout(ambTimer); ambTimer = setTimeout(ambientBurst, ms); }
+  // The held bit from the last burst flickers out.
+  function releaseHeld() {
+    const d = ambHeld; if (!d) return;
+    ambHeld = null;
+    d.classList.remove('hold'); d.classList.add('release');
+    setTimeout(() => d.remove(), 400);
+  }
+  function ambientBurst() {
+    if (!ambOn) return;
+    const home = $('[data-route="home"]').classList.contains('active');
+    if (document.hidden || !home || introRunning || heroEl.getBoundingClientRect().bottom < 120) { ambientNext(1500); return; }
+    releaseHeld();
+    const k = SLOW / BASE_SLOW, n = Math.random() < .45 ? 3 : 2, span = rnd(1000, 2000);
+    const times = Array.from({ length: n }, (_, i) => i === 0 ? 0 : rnd(150, span)).sort((a, b) => a - b);
+    times.forEach((t, i) => setTimeout(() => ambientBit(i === times.length - 1), t * k));
+    ambientNext((times[times.length - 1] + rnd(4000, 8000)) * k);   // 4–8s until the next burst
+  }
+  function ambientBit(hold) {
+    if (!ambOn) return;
+    const k = SLOW / BASE_SLOW, life = rnd(450, 1100) * k, r = Math.random();
+    const acc = Math.random() < .4 ? ' acc' : '';
+    const d = document.createElement('div');
+    let left = rnd(45, 90);
+    if (r < .38) { d.className = 'hud' + acc; d.textContent = pick(HUD_TEXT); }
+    else if (r < .6) {
+      // A hairline with a square at each end, beside a label; sometimes pointing the other way.
+      d.className = 'hud link' + acc + (Math.random() < .35 ? ' flip' : '');
+      d.innerHTML = `<span class="wire" style="width:${Math.round(rnd(40, 110))}px"></span><span>${pick(HUD_TEXT)}</span>`;
+      left = rnd(45, 72);
+    }
+    else if (r < .74) d.className = 'hud cross' + (Math.random() < .3 ? ' acc' : '');
+    else if (r < .88) { d.className = 'hud bar acc'; d.style.width = rnd(40, 120) + 'px'; }
+    else { d.className = 'hud box'; d.style.width = rnd(50, 140) + 'px'; d.style.height = rnd(30, 90) + 'px'; }
+    d.style.left = left + '%';
+    d.style.top = rnd(9, 46) + '%';
+    d.style.setProperty('--life', life + 'ms');
+    if (hold) { d.classList.add('hold'); ambHeld = d; }
+    ambFx.appendChild(d);
+    if (!hold) setTimeout(() => d.remove(), life + 60);
+  }
+
+  /* =====================================================================
+     A/B lab: the floating test-tube button and its panel.
+     Each feature lists its options; the choice is kept in localStorage.
+     ===================================================================== */
+  const variants = window.__variants || {};
+  const FEATURES = [
+    {
+      id: 'landing', title: 'Landing animation',
+      options: [
+        { v: 'A', label: 'As it is', desc: 'The page fades in.' },
+        { v: 'B', label: 'Boot sequence', desc: 'The image powers on after a second, then the logo, text and buttons glitch in while scan bits flicker around.' },
+      ],
+      home: true,
+      play: (v) => { if (v === 'B') { runIntroB(); ambientStart(); } else { ambientStop(); replayFade(); } },
+    },
+    {
+      id: 'scroll', title: 'Glitched loading',
+      options: [
+        { v: 'A', label: 'As it is', desc: 'Sections fade up as you scroll.' },
+        { v: 'B', label: 'Glitched loading', desc: 'Sections, images and cards glitch in as they scroll into view, with scattered scan bits and a scan line over images; headings decode letter by letter.' },
+        { v: 'C', label: 'Clean scan', desc: 'Corner brackets, then within half a second the text glitches in and the image fades in slowly. No frames scanning over the content.' },
+      ],
+      play: (v) => {
+        html.classList.toggle('gl-b', v === 'B' && !reduce);
+        html.classList.toggle('gl-c', v === 'C' && !reduce);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        rearmReveals();
+      },
+    },
+  ];
+  function replayFade() {
+    cancelIntro();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    const page = $('[data-route="home"]');
+    page.classList.remove('active'); void page.offsetWidth; page.classList.add('active');
+    restart();
+  }
+  function onHome(fn) {
+    if ($('[data-route="home"]').classList.contains('active')) fn();
+    else { location.hash = '#/'; setTimeout(fn, 60); }
+  }
+  const labBtn = $('#labBtn'), labPanel = $('#labPanel'), labItems = $('#labItems');
+  function renderLab() {
+    labItems.innerHTML = FEATURES.map((f) => {
+      const cur = variants[f.id] || 'A';
+      return `<div class="lab-item" data-f="${f.id}">
+        <div class="lab-item-head"><h3>${f.title}</h3>
+          <button class="lab-replay" data-replay="${f.id}"><i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>Replay</button></div>
+        <div class="lab-opts" role="radiogroup" aria-label="${f.title}">
+          ${f.options.map((o) => `<button class="lab-opt" role="radio" aria-checked="${o.v === cur}" data-v="${o.v}">
+            <span class="key">${o.v}</span><span><strong>${o.label}</strong><span class="d">${o.desc}</span></span></button>`).join('')}
+        </div></div>`;
+    }).join('');
+    labBtn.classList.toggle('has-b', Object.values(variants).some((v) => v !== 'A'));
+  }
+  labItems.addEventListener('click', (e) => {
+    const opt = e.target.closest('.lab-opt'), rep = e.target.closest('[data-replay]');
+    if (opt) {
+      const f = FEATURES.find((x) => x.id === opt.closest('.lab-item').dataset.f);
+      variants[f.id] = opt.dataset.v;
+      try { localStorage.setItem('mh-variants', JSON.stringify(variants)); } catch (err) {}
+      renderLab();
+      $(`.lab-item[data-f="${f.id}"] .lab-opt[data-v="${opt.dataset.v}"]`).focus();
+      const go = () => f.play(variants[f.id]);
+      f.home ? onHome(go) : go();
+    } else if (rep) {
+      const f = FEATURES.find((x) => x.id === rep.dataset.replay);
+      const go = () => f.play(variants[f.id] || 'A');
+      f.home ? onHome(go) : go();
+    }
+  });
+  function openLab() { labPanel.hidden = false; labBtn.setAttribute('aria-expanded', 'true'); }
+  function closeLab(refocus) {
+    if (labPanel.hidden) return;
+    labPanel.hidden = true; labBtn.setAttribute('aria-expanded', 'false');
+    if (refocus) labBtn.focus();
+  }
+  labBtn.addEventListener('click', () => labPanel.hidden ? openLab() : closeLab());
+  $('#labClose').addEventListener('click', () => closeLab(true));
+  document.addEventListener('pointerdown', (e) => { if (!labPanel.hidden && !e.target.closest('#labPanel, #labBtn')) closeLab(); });
+
+  /* ---- Animation speed: one number for both animations ----
+     0 (or empty) = as designed; negative slows down (-0.5 = half speed); positive speeds up
+     (2 = three times as fast). Speed is 1 + the number, never below 0.1. */
+  const speedIn = $('#labSpeed'), speedOut = $('#labSpeedOut');
+  function parseSpeed(s) {
+    s = String(s ?? '').trim().replace(',', '.').replace(/[×x]$/i, '');
+    if (s === '' || s === '-' || s === '+') return 0;
+    return /^[-+]?(\d+\.?\d*|\.\d+)$/.test(s) ? parseFloat(s) : NaN;
+  }
+  function applySpeed(offset) {
+    const speed = Math.max(0.1, 1 + offset);
+    SLOW = BASE_SLOW / speed;
+    GX = BASE_GX / speed;
+    GXC = BASE_GXC / speed;
+    html.style.setProperty('--k', String(1 / speed));
+    const fmt = (n) => (+n.toFixed(2)).toString();
+    speedOut.innerHTML = speed === 1 ? '<b>1×</b> · as designed'
+      : `<b>${fmt(speed)}× speed</b> · animations take ${fmt(1 / speed)}× as long${1 + offset < 0.1 ? ' (slowest)' : ''}`;
+  }
+  let savedSpeed = ''; try { savedSpeed = localStorage.getItem('mh-anim-speed') || ''; } catch (e) {}
+  speedIn.value = savedSpeed;
+  applySpeed(parseSpeed(savedSpeed) || 0);
+  speedIn.addEventListener('input', () => {
+    const v = parseSpeed(speedIn.value);
+    speedIn.setAttribute('aria-invalid', String(Number.isNaN(v)));
+    if (Number.isNaN(v)) { speedOut.innerHTML = 'Type a number, like <b>-0.5</b> or <b>2</b>'; return; }
+    applySpeed(v);
+    try { localStorage.setItem('mh-anim-speed', speedIn.value.trim()); } catch (e) {}
+  });
+  // Enter replays the landing animation at the new speed.
+  speedIn.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const f = FEATURES[0];
+    onHome(() => f.play(variants[f.id] || 'A'));
+  });
+  renderLab();
+
+  route();
+  if (html.classList.contains('intro-b')) runIntroB();
+  if (variants.landing === 'B') ambientStart();
+})();
+</script>
+</body>
+</html>
