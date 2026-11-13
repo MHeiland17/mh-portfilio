@@ -1004,8 +1004,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       <span class="eyebrow" data-intro="1" data-scramble>Product designer &amp; illustrator · Sydney</span>
       <h1 data-intro="1" data-scramble>Hey, I'm Marek<span>.</span></h1>
       <div class="hero-intro">
-        <p data-intro="1">I'm a designer and an illustrator based in Sydney. I've worked as a Product Designer with 12 years of extensive experience in creating multi-platform software.</p>
-        <p data-intro="1">I have a never-ending passion for creativity and a drive to adapt to new processes and challenges.</p>
+        <p data-intro="1">I'm a designer and an illustrator based in Sydney. I've worked as a Product Designer for 12 years. Acquiring extensive experience in creating multi-platform software.</p>
       </div>
       <div class="btn-row">
         <a class="btn primary" href="#/work" data-intro="1">See the work <svg><use href="#i-arrow"/></svg></a>
@@ -2814,17 +2813,23 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const s = document.createElement('div'); s.className = 'sweep'; introFx?.appendChild(s);
       heroSlides.classList.add('flick');
     });
-    // As it powers on, hard-cut through every slide (~1s in all), landing back on the first.
-    const FLICK = 200 / SLOW;   // 200ms per slide in real time (later() multiplies by SLOW)
+    // As it powers on, hard-cut through every slide twice, landing back on the first. The cuts
+    // start fast and slow down (ease-in) towards the end of the second pass.
+    const CUTS = slides.length * 2;
+    const FLICK_MIN = 55 / SLOW, FLICK_MAX = 460 / SLOW;   // real-time ms per slide (later() multiplies by SLOW)
     const CYCLE_DELAY = 400 / SLOW;   // the first image holds 400ms (real time) before the cuts start
-    for (let i = 1; i <= slides.length; i++)
-      later(1000 + HOLD + CYCLE_DELAY + FLICK * i, () => {
+    let cycleLen = 0;
+    for (let i = 1; i <= CUTS; i++) {
+      const k = (i - 1) / (CUTS - 1);
+      cycleLen += FLICK_MIN + (FLICK_MAX - FLICK_MIN) * k * k * k;
+      later(1000 + HOLD + CYCLE_DELAY + cycleLen, () => {
         show(i % slides.length);
-        if (i === slides.length) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
+        if (i === CUTS) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
       });
+    }
     // Scan bits flicker around while things load in.
     // (They run on into the pause before the hero copy, so the screen isn't static.)
-    const bitsEnd = 1000 + CYCLE_DELAY + FLICK * slides.length + 1000 / SLOW + 400;
+    const bitsEnd = 1000 + CYCLE_DELAY + cycleLen + 1000 / SLOW + 400;
     for (let i = 0; i < 20; i++) later(rnd(950, Math.max(2900, bitsEnd)) + HOLD, randomBit);
 
     // 2.85s on: header, then (a second after the slide cycle ends) hero copy and buttons,
@@ -2834,7 +2839,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       ...$$('.hero [data-intro]'),
     ];
     // The hero copy and buttons wait until a second (real time) after the slide cycle lands.
-    const heroStart = 1000 + HOLD + CYCLE_DELAY + FLICK * slides.length + 1000 / SLOW;
+    const heroStart = 1000 + HOLD + CYCLE_DELAY + cycleLen + 1000 / SLOW;
     let t = 1350 + HOLD, heroReached = false;
     order.forEach((el) => {
       if (!heroReached && el.closest('.hero')) { heroReached = true; t = Math.max(t, heroStart); }
