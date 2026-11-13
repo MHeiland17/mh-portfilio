@@ -358,7 +358,9 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .lightbox { overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 30px 90px rgba(0,0,0,.6);
   transform-origin: center; will-change: transform; cursor: zoom-in; -webkit-user-drag: none; }
-.lightbox img.lb-anim { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.lightbox img.lb-anim, .lb-peek.lb-anim { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.lb-peek { position: absolute; inset: 0; padding: inherit; display: flex; align-items: center; justify-content: center; pointer-events: none; visibility: hidden; }
+.lb-peek.on { visibility: visible; }
 .lightbox.zoomed img { cursor: grab; }
 .lightbox.zoomed.dragging img { cursor: grabbing; }
 .lightbox .lb-btn { position: absolute; z-index: 1; width: 48px; height: 48px; border-radius: 999px; border: 1px solid rgba(255,255,255,.2); background: rgba(20,22,24,.55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #fff; display: grid; place-items: center; cursor: pointer; transition: opacity .2s ease, background .2s; }
@@ -1378,6 +1380,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
   <img alt="">
+  <div class="lb-peek" aria-hidden="true"><img alt=""></div>
   <button class="lb-btn lb-close" aria-label="Close"><svg><use href="#i-x"/></svg></button>
   <button class="lb-btn lb-prev" aria-label="Previous image"><svg><use href="#i-left"/></svg></button>
   <button class="lb-btn lb-next" aria-label="Next image"><svg><use href="#i-right"/></svg></button>
@@ -1570,8 +1573,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     lbCount.textContent = set.length > 1 ? `${idx + 1} / ${set.length}` : '';
     $('.lb-prev', lb).hidden = $('.lb-next', lb).hidden = set.length < 2;
   }
-  function close() { resetZoom(false); lb.classList.remove('open'); document.body.style.overflow = ''; lbImg.src = ''; lastFocus?.focus(); }
-  const step = (d) => { idx = (idx + d + set.length) % set.length; paint(); };
+  function close() { resetZoom(false); endSettle(); lb.classList.remove('open'); document.body.style.overflow = ''; lbImg.src = ''; lastFocus?.focus(); }
+  const step = (d) => { if (settling) return; idx =(idx + d + set.length) % set.length; paint(); };
   document.addEventListener('click', (e) => {
     const g = e.target.closest('.gallery a');
     if (g) {
@@ -1644,6 +1647,42 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       else close();
     }, 260);
   }
+  /* Swipe (un-zoomed only): the image follows the finger and the neighbour slides in
+     beside it. Past 25% of the screen width it carries on to that image, else snaps back. */
+  const peek = $('.lb-peek', lb), peekImg = $('img', peek);
+  let peekDir = 0, settling = false, settleTimer = null;
+  function setPeek(dir) {
+    if (dir === peekDir) return;
+    peekDir = dir;
+    if (!dir) { peek.classList.remove('on'); peekImg.removeAttribute('src'); return; }
+    const it = set[(idx + dir + set.length) % set.length];
+    peekImg.src = it.src; peekImg.alt = it.alt || ''; peek.classList.add('on');
+  }
+  function dragSwipe(dx, anim) {
+    if (dx) setPeek(dx < 0 ? 1 : -1);
+    lbImg.classList.toggle('lb-anim', anim); peek.classList.toggle('lb-anim', anim);
+    lbImg.style.transform = dx ? `translateX(${dx}px)` : '';
+    peek.style.transform = `translateX(${dx + peekDir * lb.clientWidth}px)`;
+  }
+  function endSettle() { clearTimeout(settleTimer); settling = false; setPeek(0); peek.classList.remove('lb-anim'); lbImg.classList.remove('lb-anim'); }
+  function endSwipe(dx) {
+    const w = lb.clientWidth;
+    settling = true;
+    if (peekDir && Math.abs(dx) > w * 0.25) {
+      const dir = peekDir;
+      dragSwipe(-dir * w, true); // current slides off, neighbour lands in the centre
+      settleTimer = setTimeout(async () => {
+        idx = (idx + dir + set.length) % set.length;
+        paint(); // main <img> jumps back to centre with the new src, hidden under the peek
+        // Wait for the swapped-in image to be ready, but never hang on decode().
+        if (!lbImg.complete) await Promise.race([lbImg.decode().catch(() => {}), new Promise((r) => setTimeout(r, 200))]);
+        endSettle();
+      }, 320);
+    } else {
+      dragSwipe(0, true);
+      settleTimer = setTimeout(endSettle, 320);
+    }
+  }
   const pinchState = () => {
     const [a, b] = [...ptrs.values()];
     return { d: Math.hypot(a.x - b.x, a.y - b.y), m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
@@ -1651,6 +1690,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   lb.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.lb-btn') || (e.pointerType === 'mouse' && e.button !== 0)) return;
     e.preventDefault();
+    if (settling || gesture?.type === 'swipe') return; // no pinch mid-swipe
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     try { lb.setPointerCapture(e.pointerId); } catch {}
     if (ptrs.size === 1) {
@@ -1668,10 +1708,14 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const p = pinchState();
       zoomAround(gesture.m0.x, gesture.m0.y, gesture.from.s * p.d / gesture.d0, gesture.from, p.m);
       applyZoom(false);
-    } else if (gesture.type === 'pan') {
+    } else if (gesture.type === 'pan' || gesture.type === 'swipe') {
       const dx = e.clientX - gesture.x0, dy = e.clientY - gesture.y0;
-      if (!gesture.moved && Math.hypot(dx, dy) > 8) gesture.moved = true;
-      if (gesture.moved && zoomed()) {
+      if (!gesture.moved && Math.hypot(dx, dy) > 8) {
+        gesture.moved = true;
+        if (!zoomed() && set.length > 1 && Math.abs(dx) > Math.abs(dy)) gesture.type = 'swipe';
+      }
+      if (gesture.type === 'swipe') { gesture.dx = dx; dragSwipe(dx, false); }
+      else if (gesture.moved && zoomed()) {
         lb.classList.add('dragging');
         zx = gesture.zx0 + dx; zy = gesture.zy0 + dy; clampPan(); applyZoom(false);
       }
@@ -1691,6 +1735,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       return;
     }
     const g = gesture; gesture = null;
+    if (g.type === 'swipe') { endSwipe(e.type === 'pointerup' ? g.dx || 0 : 0); return; }
     if (e.type === 'pointerup' && !g.moved && Date.now() - g.t < 350) onTap(e.clientX, e.clientY, g.onImg);
   }
   lb.addEventListener('pointerup', endPointer);
@@ -1701,7 +1746,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     if (!zoomed()) { zs = 1; zx = zy = 0; }
     applyZoom(false);
   }, { passive: false });
-  window.addEventListener('resize', () => { if (lb.classList.contains('open')) resetZoom(false); });
+  window.addEventListener('resize', () => { if (lb.classList.contains('open') && !settling) { resetZoom(false); setPeek(0); } });
 
   /* =====================================================================
      Landing animation, variant B: a boot sequence. The hero is black for a second
