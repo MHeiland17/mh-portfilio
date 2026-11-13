@@ -27,7 +27,7 @@
     var lab = location.protocol === 'file:' || host === 'localhost' || host === '[::1]' || /\.localhost$/.test(host)
       || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
     window.__lab = lab;
-    var v = { landing: 'B', scroll: 'D', text: 'B', scans: 'C', illscans: 'B' };
+    var v = { landing: 'B', scroll: 'D', text: 'B', scans: 'C', illscans: 'B', bootcycle: 'B' };
     if (lab) try { var saved = JSON.parse(localStorage.getItem('mh-variants') || '{}'); for (var k in saved) v[k] = saved[k]; } catch (e) {}
     window.__variants = v;
     var home = !location.hash || location.hash === '#/' || location.hash === '#';
@@ -181,6 +181,11 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .hero-slides img.on { opacity: 1; transform: scale(1); }
 /* The boot's quick flick through every slide: hard cuts, no cross-fade. */
 .hero-slides.flick img { transition: none; }
+/* Boot cycle B: every artwork from the Illustrations page in a reel laid over the slides, one
+   shown at a time with hard cuts. Removed once the cycle lands back on the first slide. */
+.boot-reel { position: absolute; inset: 0; z-index: 1; }
+.boot-reel img { opacity: 0; transform: none; transition: none; }
+.boot-reel img.on { opacity: 1; transform: none; }
 .hero::after { content: ''; position: absolute; inset: 0;
   background:
     linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 70%),
@@ -2792,9 +2797,32 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       if (el._final) el._final[0].textContent = el._final[1];
     });
     introFx?.remove(); introFx = null;
+    heroSlides.querySelector('.boot-reel')?.remove();
     heroSlides.classList.remove('boot', 'flick'); heroEl.classList.remove('shade');
     html.classList.remove('intro-b');
     introRunning = false;
+  }
+
+  // Boot cycle B/C's reel: the artworks from the Illustrations page (all of them, or a random
+  // share), freshly shuffled, as stacked images over the slides (cutting between
+  // already-decoded images doesn't flash). The first slide's artwork is never last, so the
+  // final cut back to it is a visible change.
+  function bootReel(share = 1) {
+    const seen = new Set(), first = slides[0].getAttribute('src');
+    let srcs = $$('#gallery1 img, #gallery2 img').map((img) => img.getAttribute('src'))
+      .filter((s) => !seen.has(s) && seen.add(s));
+    for (let i = srcs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [srcs[i], srcs[j]] = [srcs[j], srcs[i]];
+    }
+    srcs = srcs.slice(0, Math.ceil(srcs.length * share));
+    if (srcs.length > 1 && srcs[srcs.length - 1] === first) [srcs[0], srcs[srcs.length - 1]] = [srcs[srcs.length - 1], srcs[0]];
+    const reel = document.createElement('div');
+    reel.className = 'boot-reel';
+    reel.setAttribute('aria-hidden', 'true');
+    srcs.forEach((s) => { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = s; reel.appendChild(im); });
+    heroSlides.appendChild(reel);
+    return reel;
   }
 
   function runIntroB() {
@@ -2830,19 +2858,48 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const s = document.createElement('div'); s.className = 'sweep'; introFx?.appendChild(s);
       heroSlides.classList.add('flick');
     });
-    // As it powers on, hard-cut through every slide twice, landing back on the first. The cuts
-    // start fast and slow down (ease-in) towards the end of the second pass.
-    const CUTS = slides.length * 2;
-    const FLICK_MIN = 55 / SLOW, FLICK_MAX = 460 / SLOW;   // real-time ms per slide (later() multiplies by SLOW)
     const CYCLE_DELAY = 400 / SLOW;   // the first image holds 400ms (real time) before the cuts start
     let cycleLen = 0;
-    for (let i = 1; i <= CUTS; i++) {
-      const k = (i - 1) / (CUTS - 1);
-      cycleLen += FLICK_MIN + (FLICK_MAX - FLICK_MIN) * k * k * k;
-      later(1000 + HOLD + CYCLE_DELAY + cycleLen, () => {
-        show(i % slides.length);
-        if (i === CUTS) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
-      });
+    const bootCycle = (window.__variants || {}).bootcycle;
+    if (bootCycle === 'B' || bootCycle === 'C') {
+      // Boot cycle B: hard-cut through every artwork on the Illustrations page in a new random
+      // order, all within 3s (real time), fast at first and slowing down (ease-in), then land
+      // back on the first slide. C: the same with a random half of them, within 2.5s. The
+      // artworks start loading now, during the black screen; one that hasn't loaded by its turn
+      // is skipped.
+      const half = bootCycle === 'C';
+      const reel = bootReel(half ? 0.5 : 1);
+      const n = reel.children.length;
+      const w = Array.from({ length: n }, (_, i) => { const k = i / Math.max(1, n - 1); return 1 + 7 * k * k * k; });
+      const unit = ((half ? 2500 : 3000) / SLOW) / w.reduce((a, b) => a + b, 0);
+      let shown = null;
+      for (let i = 0; i <= n; i++) {
+        const at = cycleLen;
+        later(1000 + HOLD + CYCLE_DELAY + at, () => {
+          if (i === n) {   // land: drop the reel to reveal the first slide
+            show(0); reel.remove();
+            requestAnimationFrame(() => heroSlides.classList.remove('flick'));
+            return;
+          }
+          const im = reel.children[i];
+          if (!im.complete || !im.naturalWidth) return;   // not loaded yet: hold the last frame
+          shown?.classList.remove('on'); im.classList.add('on'); shown = im;
+        });
+        if (i < n) cycleLen += w[i] * unit;
+      }
+    } else {
+      // As it powers on, hard-cut through every slide twice, landing back on the first. The cuts
+      // start fast and slow down (ease-in) towards the end of the second pass.
+      const CUTS = slides.length * 2;
+      const FLICK_MIN = 55 / SLOW, FLICK_MAX = 460 / SLOW;   // real-time ms per slide (later() multiplies by SLOW)
+      for (let i = 1; i <= CUTS; i++) {
+        const k = (i - 1) / (CUTS - 1);
+        cycleLen += FLICK_MIN + (FLICK_MAX - FLICK_MIN) * k * k * k;
+        later(1000 + HOLD + CYCLE_DELAY + cycleLen, () => {
+          show(i % slides.length);
+          if (i === CUTS) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
+        });
+      }
     }
     // Scan bits flicker around while things load in.
     // (They run on into the pause before the hero copy, so the screen isn't static.)
@@ -3340,6 +3397,17 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       ],
       home: true,
       play: (v) => { if (v === 'B') { runIntroB(); ambientStart(); } else { ambientStop(); replayFade(); } },
+    },
+    {
+      id: 'bootcycle', title: 'Boot image cycle',
+      options: [
+        { v: 'A', label: 'Hero slides', desc: 'As the image powers on, it cuts through the five hero slides twice, fast then slowing, and lands on the first.' },
+        { v: 'B', label: 'Every artwork', desc: 'As the image powers on, it cuts through every artwork from the Illustrations page in a new random order each time, all within 3 seconds, fast then slowing, and lands on the first slide.' },
+        { v: 'C', label: 'Half the artworks', desc: 'As Every artwork, but a random half of them (a different half each time), within 2.5 seconds.' },
+      ],
+      home: true,
+      // Needs the boot sequence; replays it.
+      play: () => { runIntroB(); ambientStart(); },
     },
     {
       id: 'scroll', title: 'Glitched loading',
