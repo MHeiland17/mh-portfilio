@@ -222,7 +222,7 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .alt { background: var(--bg-2); }
 
 /* Work cards */
-.work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(16px, 2vw, 24px); }
+.work-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 40px; }
 .work-card { grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; gap: 18px; }
 .work-card.wide { grid-column: span 12; }
 .work-card .media { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); aspect-ratio: 16 / 10; }
@@ -449,12 +449,22 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 }
 
 /* Illustration strip on home */
-.strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 38%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
-  padding: 0 var(--gutter) 12px; scrollbar-width: thin; }
-.strip a { scroll-snap-align: start; border-radius: var(--radius); overflow: hidden; display: block; aspect-ratio: 2.65 / 1; background: var(--bg-3); }
-.strip img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s; }
+/* An endless marquee: the track holds the shuffled set twice and slides by half its width.
+   Each item carries its own right margin (no gap), so half the track is exactly one set. */
+.strip { overflow: hidden; padding-bottom: 12px; --strip-w: clamp(300px, 38vw, 560px); }
+.strip-track { display: flex; width: max-content; animation: strip-loop var(--strip-dur, 180s) linear infinite; }
+.strip:hover .strip-track, .strip:focus-within .strip-track { animation-play-state: paused; }
+.strip a { flex: none; width: var(--strip-w); margin-right: 16px; border-radius: var(--radius); overflow: hidden; display: block;
+  aspect-ratio: 2.65 / 1; background: var(--bg-3); }
+/* Portrait pieces get cropped to the same landscape frame as the rest. */
+.strip img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .8s; }
 .strip a:hover img { transform: scale(1.04); }
-@media (max-width: 760px) { .strip { grid-auto-columns: 82%; } }
+@keyframes strip-loop { to { transform: translateX(-50%); } }
+@media (max-width: 760px) { .strip { --strip-w: 82vw; } }
+@media (prefers-reduced-motion: reduce) {
+  .strip { overflow-x: auto; scrollbar-width: thin; }
+  .strip-track { animation: none; padding: 0 var(--gutter); }
+}
 
 /* About */
 .about { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 96px); }
@@ -1125,14 +1135,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       <div><span class="eyebrow">Illustrations</span><h2>Behind the dystopia</h2></div>
       <a class="arrow-link" href="#/illustrations">All illustrations <svg><use href="#i-arrow"/></svg></a>
     </div>
-    <div class="strip reveal">
-      <a href="#/illustrations"><img src="img/H-SPECOP.jpg" alt="Illustration: a soldier in a neon-lit alley" loading="lazy"></a>
-      <a href="#/illustrations"><img src="img/M-Ramen.jpg" alt="Illustration: a ramen bar" loading="lazy"></a>
-      <a href="#/illustrations"><img src="img/S-Highway.jpg" alt="Illustration: a highway" loading="lazy"></a>
-      <a href="#/illustrations"><img src="img/H-ORB.jpg" alt="Illustration: an orb" loading="lazy"></a>
-      <a href="#/illustrations"><img src="img/Fugative_pt3-studio.jpg" alt="Illustration from the Fugitive series" loading="lazy"></a>
-      <a href="#/illustrations"><img src="img/S-Laneway.jpg" alt="Illustration: a laneway" loading="lazy"></a>
-    </div>
+    <!-- Filled by script with every piece from the Illustrations page, shuffled on each load. -->
+    <div class="strip reveal" id="artStrip"><div class="strip-track"></div></div>
   </section>
 
   <section class="section alt" id="about">
@@ -1949,6 +1953,40 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   const onScroll = () => header.classList.toggle('solid', window.scrollY > 40 || nav.classList.contains('open'));
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* ---- Home illustration strip: every gallery piece, shuffled, looping forever ---- */
+  (() => {
+    const track = $('#artStrip .strip-track');
+    if (!track) return;
+    const seen = new Set();
+    const pieces = $$('#gallery1 img, #gallery2 img').filter((img) => {
+      const src = img.getAttribute('src');
+      return !seen.has(src) && seen.add(src);
+    });
+    for (let i = pieces.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+    }
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const item = (img, copy) => {
+      const a = document.createElement('a');
+      a.href = '#/illustrations';
+      const im = document.createElement('img');
+      im.src = img.getAttribute('src');
+      im.alt = copy ? '' : `Illustration: ${img.alt}`;
+      im.loading = 'lazy';
+      im.decoding = 'async';
+      a.appendChild(im);
+      // The second copy is only there to close the loop, so keep it out of tab order and screen readers.
+      if (copy) { a.tabIndex = -1; a.setAttribute('aria-hidden', 'true'); }
+      return a;
+    };
+    track.append(...pieces.map((p) => item(p, false)));
+    if (!still) {
+      track.append(...pieces.map((p) => item(p, true)));
+      track.style.setProperty('--strip-dur', `${pieces.length * 6}s`);
+    }
+  })();
+
   /* ---- Scroll-in reveals ---- */
   // Units are what the scroll observer watches. In case studies, runs of consecutive text are
   // wrapped in .gx-run so each run comes in as one framed piece in "Glitched loading" B.
@@ -1961,7 +1999,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     });
   });
   const UNIT_SEL = '.reveal, .gx-run, .prose .figs, .prose .cards, .prose .logos, .prose .work-grid, .gallery a';
-  const MEDIA = 'img, .media, .app-embed, .exp-media, .ico, .logos > div, .strip > a';
+  const MEDIA = 'img, .media, .app-embed, .exp-media, .ico, .logos > div, .strip';
   const HEAD = '.eyebrow, h1, h2, h3, .num, .tag, dt';
   const PART = `${MEDIA}, ${HEAD}, dd, p, li, .quote, .callout, figcaption, .btn, .arrow-link, .tools span`;
   const kindOf = (p) => p.matches(MEDIA) ? 0 : p.matches(HEAD) ? 1 : 2; // image, heading, body
@@ -2283,7 +2321,16 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     }
     const g = gesture; gesture = null;
     if (g.type === 'swipe') { endSwipe(e.type === 'pointerup' ? g.dx || 0 : 0); return; }
-    if (e.type === 'pointerup' && !g.moved && Date.now() - g.t < 350) onTap(e.clientX, e.clientY, g.onImg);
+    if (e.type !== 'pointerup' || g.moved) return;
+    if (e.pointerType === 'mouse') onClick(e.clientX, e.clientY, g.onImg);
+    else if (Date.now() - g.t < 350) onTap(e.clientX, e.clientY, g.onImg);
+  }
+  /* Mouse: a single click on the image zooms in at that point (matching the zoom-in
+     cursor), a click while zoomed zooms back out, a click on the backdrop closes. */
+  function onClick(x, y, onImg) {
+    if (zoomed()) { zs = 1; zx = zy = 0; applyZoom(true); }
+    else if (onImg) { zoomAround(x, y, fillScale()); applyZoom(true); }
+    else close();
   }
   lb.addEventListener('pointerup', endPointer);
   lb.addEventListener('pointercancel', endPointer);
