@@ -14,8 +14,9 @@
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
 <script>
-  // The chosen variations: landing B ("boot sequence"), scroll D ("no frames") and typed
-  // text B (headings type out, body copy glitches in).
+  // The chosen variations: landing B ("boot sequence"), scroll D ("no frames"), typed
+  // text B (headings type out, body copy glitches in) and illustration scans B (scans over
+  // the Illustrations page as you scroll).
   // Set before first paint, so the landing can hide the hero without a flash of the
   // finished page.
   // The A/B lab only appears when the site runs locally (localhost, a file, or a home-network
@@ -26,7 +27,7 @@
     var lab = location.protocol === 'file:' || host === 'localhost' || host === '[::1]' || /\.localhost$/.test(host)
       || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
     window.__lab = lab;
-    var v = { landing: 'B', scroll: 'D', text: 'B' };
+    var v = { landing: 'B', scroll: 'D', text: 'B', illscans: 'B' };
     if (lab) try { var saved = JSON.parse(localStorage.getItem('mh-variants') || '{}'); for (var k in saved) v[k] = saved[k]; } catch (e) {}
     window.__variants = v;
     var home = !location.hash || location.hash === '#/' || location.hash === '#';
@@ -240,6 +241,65 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .work-card:hover .go, .work-card:focus-visible .go { transform: none; opacity: 1; }
 .work-card .go svg { width: 20px; height: 20px; }
 @media (max-width: 760px) { .work-card, .work-card.wide { grid-column: span 12; } .work-card.wide .media { aspect-ratio: 16 / 10; } }
+
+/* Home: case studies and personal projects as an index. A sticky heading column (with a
+   jump list that marks the case study in view) beside a list of rows. */
+.idx-split { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.idx-aside { position: sticky; top: 96px; display: grid; gap: 18px; }
+.idx-aside h2 { font-size: clamp(34px, 4vw, 48px); }
+.idx-aside p { color: var(--text-2); font-size: 16px; }
+.idx-aside nav { display: grid; margin-top: 8px; border-top: 1px solid var(--line); }
+.idx-aside nav a { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-size: 15px; color: var(--text-2); transition: color .2s; }
+.idx-aside nav a span { color: var(--text-3); font: 500 12px/1.9 var(--mono); transition: color .2s; }
+.idx-aside nav a:hover, .idx-aside nav a.on { color: var(--text); }
+.idx-aside nav a.on span { color: var(--accent); }
+.idx-list { display: grid; }
+.idx-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: center;
+  padding: clamp(20px, 2.6vw, 32px) 0; border-top: 1px solid var(--line); text-decoration: none; }
+.idx-row:first-child { border-top: 0; padding-top: 0; }
+.idx-row:last-child { padding-bottom: 0; }
+.idx-media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--bg-3); aspect-ratio: 16 / 10; }
+.idx-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.idx-row:hover .idx-media img { transform: scale(1.03); }
+.idx-media.device { background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--accent) 20%, var(--bg-3)) 0%, var(--bg-3) 62%); }
+.idx-media.device img { object-fit: contain; padding: 8%; }
+.idx-text { display: grid; gap: 12px; align-content: center; }
+.idx-text h3 { font-size: clamp(24px, 2.4vw, 32px); }
+.idx-text p { color: var(--text-2); font-size: 16.5px; }
+.idx-title { background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat; transition: background-size .45s cubic-bezier(.2,.7,.2,1); }
+.idx-row:hover .idx-title, .idx-row:focus-visible .idx-title { background-size: 100% 2px; }
+.idx-go { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; margin-top: 6px; }
+.idx-go b { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); transition: background-color .3s, border-color .3s, color .3s; }
+.idx-go svg { width: 15px; height: 15px; transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.idx-row:hover .idx-go b { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.idx-row:hover .idx-go svg { transform: translateX(2px); }
+.proj { display: grid; gap: 20px; }
+.proj-media { position: relative; display: block; overflow: hidden; border-radius: var(--radius-lg); border: 1px solid var(--line); aspect-ratio: 16 / 9; background: var(--bg-3); }
+.proj-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.proj-media:hover img { transform: scale(1.03); }
+/* The screenshot is dark in either theme, so the badge is fixed dark with the dark-theme yellow. */
+.proj-live { position: absolute; left: 16px; top: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px 7px 10px; border-radius: 999px;
+  background: rgba(11,12,13,.72); color: #ffce3c; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.proj-live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: live-pulse 2.2s infinite; }
+@keyframes live-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,206,60,.6); } 70%, 100% { box-shadow: 0 0 0 8px transparent; } }
+@media (prefers-reduced-motion: reduce) { .proj-live i { animation: none; } }
+.proj-info { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px clamp(20px, 3vw, 40px); align-items: start; }
+.proj-info h3 { font-size: clamp(28px, 3vw, 38px); }
+.proj-info p { color: var(--text-2); margin-top: 10px; }
+.proj-meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; margin: 0; }
+.proj-meta dt { color: var(--text-3); }
+.proj-meta dd { margin: 0; color: var(--text-2); }
+.proj-info .btn-row { grid-column: 1 / -1; margin-top: 8px; }
+@media (max-width: 900px) {
+  .idx-split { grid-template-columns: minmax(0, 1fr); }
+  .idx-aside { position: static; }
+  .idx-aside nav { display: none; }
+}
+@media (max-width: 640px) {
+  .idx-row { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 28px 0; }
+  .proj-info { grid-template-columns: minmax(0, 1fr); }
+  .proj-media { aspect-ratio: 4 / 3; }
+}
 
 /* ---------- How I work: infographic ----------
    Stat counters, then six practices as tabs. Each panel pairs a small live diagram (.hw-viz)
@@ -595,6 +655,14 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
   opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; text-shadow: 0 1px 8px rgba(0,0,0,.7); }
 .gallery a:hover .label { opacity: 1; transform: none; }
 @media (max-width: 640px) { .gallery { grid-template-columns: 1fr; } }
+/* Illustrations page: one artwork per row, each shown whole (no cropping), spaced well apart. */
+.gallery-spaced { grid-template-columns: minmax(0, 1fr); gap: clamp(40px, 6vw, 80px); }
+.gallery-spaced a:not(.full) { aspect-ratio: auto; }
+/* Each artwork is 75% of the viewport's width, centred on the page (breaking out of the
+   content column on wide screens). On phones they keep the column's full width. */
+@media (min-width: 761px) {
+  .gallery-spaced { width: 75vw; margin-left: calc(50% - 37.5vw); }
+}
 .ill-note { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 5vw, 80px); align-items: start; margin: clamp(64px, 9vw, 120px) 0; }
 .ill-note h2 { font-size: clamp(30px, 4vw, 48px); margin-top: 14px; }
 .ill-note p { color: var(--text-2); font-size: 18px; }
@@ -765,6 +833,75 @@ html.intro-b [data-intro].in.tw, html.gl-b .gx-p.in.tw, html.gl-c .gx-p.in.tw { 
 .ambient-fx .hud.release { animation: hud-out .35s steps(1, end) forwards; }
 @keyframes hud-in { 0% { opacity: 0; } 12% { opacity: 1; } 28% { opacity: .2; } 42% { opacity: 1; } 100% { opacity: 1; } }
 @keyframes hud-out { 0% { opacity: 1; } 25% { opacity: .15; } 45% { opacity: .9; } 70% { opacity: .1; } 100% { opacity: 0; } }
+/* Image scans B and C: a target locked onto something in the slide. Corner brackets, one scan
+   line passing down, and a tag on a wire. The script picks the tag's data-pos: B uses straight
+   wires (r/l = right/left of the box; b/a = below/above, be/ae right-aligned), C uses diagonal
+   leaders off a corner (ur, ul, dr, dl) with the label underlined. */
+.hud.tgt { color: var(--accent); }
+.hud.tgt .c { position: absolute; width: 10px; height: 10px; border: 1.5px solid currentColor; }
+.hud.tgt .c.tl { left: 0; top: 0; border-right: 0; border-bottom: 0; }
+.hud.tgt .c.tr { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+.hud.tgt .c.bl { left: 0; bottom: 0; border-right: 0; border-top: 0; }
+.hud.tgt .c.br { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+.hud.tgt .sc { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: currentColor; box-shadow: 0 0 8px currentColor; opacity: 0;
+  animation: tgt-scan calc(1.2s * var(--k)) cubic-bezier(.45,0,.55,1) calc(.15s * var(--k)) forwards; }
+@keyframes tgt-scan { 0% { top: 0; opacity: 0; } 12% { opacity: .9; } 88% { opacity: .9; } 100% { top: 100%; opacity: 0; } }
+.hud.tgt .tag { position: absolute; display: flex; align-items: flex-start; gap: 8px; }
+.hud.tgt .wire { position: relative; flex: none; width: var(--wl); height: 1px; margin-top: 6px; background: currentColor; transform-origin: left;
+  animation: bar-grow calc(.45s * var(--k)) cubic-bezier(.3,0,.2,1) both; }
+.hud.tgt .wire::after { content: ''; position: absolute; right: -3px; top: -2.5px; width: 6px; height: 6px; background: currentColor; }
+/* B: straight wires */
+.hud.tgt[data-pos="r"] .tag { left: 100%; top: 0; }
+.hud.tgt[data-pos="l"] .tag { right: 100%; top: 0; flex-direction: row-reverse; text-align: right; }
+.hud.tgt[data-pos="l"] .wire { transform-origin: right; }
+.hud.tgt[data-pos="l"] .wire::after { right: auto; left: -3px; }
+.hud.tgt[data-pos^="b"] .tag { top: 100%; left: 0; flex-direction: column; gap: 5px; }
+.hud.tgt[data-pos^="a"] .tag { bottom: 100%; left: 0; flex-direction: column-reverse; gap: 5px; }
+.hud.tgt[data-pos$="e"] .tag { left: auto; right: 0; align-items: flex-end; text-align: right; }
+.hud.tgt[data-pos^="b"] .wire, .hud.tgt[data-pos^="a"] .wire { width: 1px; height: calc(var(--wl) * .6); margin: 0; animation-name: bar-grow-y; }
+.hud.tgt[data-pos^="b"] .wire { transform-origin: top; }
+.hud.tgt[data-pos^="a"] .wire { transform-origin: bottom; }
+.hud.tgt[data-pos^="b"] .wire::after { right: auto; top: auto; left: -2.5px; bottom: -3px; }
+.hud.tgt[data-pos^="a"] .wire::after { right: auto; left: -2.5px; top: -3px; }
+@keyframes bar-grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+/* C: a diagonal leader from the box's corner out to the label, which is underlined (or
+   overlined, below the box) so the leader meets the line. --a is the leader's angle as drawn
+   from the label's corner back to the box's. */
+.hud.tgt[data-pos="ur"] .tag, .hud.tgt[data-pos="dr"] .tag, .hud.tgt[data-pos="ul"] .tag, .hud.tgt[data-pos="dl"] .tag { display: block; --o: calc(var(--wl) * .7071); }
+.hud.tgt[data-pos="ur"] .tag { left: calc(100% + var(--o)); bottom: calc(100% + var(--o)); }
+.hud.tgt[data-pos="dr"] .tag { left: calc(100% + var(--o)); top: calc(100% + var(--o)); }
+.hud.tgt[data-pos="ul"] .tag { right: calc(100% + var(--o)); bottom: calc(100% + var(--o)); text-align: right; }
+.hud.tgt[data-pos="dl"] .tag { right: calc(100% + var(--o)); top: calc(100% + var(--o)); text-align: right; }
+.hud.tgt[data-pos^="u"] .tx { border-bottom: 1px solid currentColor; padding-bottom: 4px; }
+.hud.tgt[data-pos^="d"] .tx { border-top: 1px solid currentColor; padding-top: 4px; }
+.hud.tgt[data-pos="ur"] .wire, .hud.tgt[data-pos="dr"] .wire, .hud.tgt[data-pos="ul"] .wire, .hud.tgt[data-pos="dl"] .wire {
+  position: absolute; margin: 0; transform-origin: 0 50%; animation-name: diag-grow; }
+.hud.tgt[data-pos="ur"] .wire { left: 0; bottom: 0; --a: 135deg; }
+.hud.tgt[data-pos="dr"] .wire { left: 0; top: 0; --a: -135deg; }
+.hud.tgt[data-pos="ul"] .wire { left: 100%; bottom: 0; --a: 45deg; }
+.hud.tgt[data-pos="dl"] .wire { left: 100%; top: 0; --a: -45deg; }
+/* C: a micro-scan first (.pre): an outlined triangle (30×22) hops across points inside the target,
+   leaving fading ticks, while the brackets, scan line and tag wait. Then it locks: the
+   brackets snap in from just wide of the target, and the scan line and tag follow as in B. */
+.hud.tgt.pre .c, .hud.tgt.pre .sc, .hud.tgt.pre .tag { display: none; }
+.hud.tgt .mtri { position: absolute; width: 30px; height: 22px; margin: -11px 0 0 -15px; }
+.hud.tgt .mtri svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hud.tgt .mtick { position: absolute; width: 4px; height: 4px; margin: -2px 0 0 -2px; background: currentColor;
+  animation: hud-out calc(.6s * var(--k)) steps(1, end) forwards; }
+.hud.tgt.snap .c { animation: tgt-lock calc(.24s * var(--k)) steps(3, end) both; }
+.hud.tgt.snap .c.tl { --lx: -12px; --ly: -12px; }
+.hud.tgt.snap .c.tr { --lx: 12px; --ly: -12px; }
+.hud.tgt.snap .c.bl { --lx: -12px; --ly: 12px; }
+.hud.tgt.snap .c.br { --lx: 12px; --ly: 12px; }
+@keyframes tgt-lock { 0% { transform: translate(var(--lx), var(--ly)); opacity: .5; } 100% { transform: none; opacity: 1; } }
+@keyframes diag-grow { from { transform: rotate(var(--a)) scaleX(0); } to { transform: rotate(var(--a)) scaleX(1); } }
+.hud.tgt .tx { display: grid; gap: 3px; }
+.hud.tgt .tx b { font-weight: 500; }
+.hud.tgt .tx small { font-size: inherit; color: rgba(255,255,255,.75); }
+.hud.tgt.quick .x { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; }
+.hud.tgt.quick .x::before, .hud.tgt.quick .x::after { content: ''; position: absolute; background: currentColor; }
+.hud.tgt.quick .x::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+.hud.tgt.quick .x::after { top: 50%; left: 0; right: 0; height: 1px; }
 
 /* ---------- Scroll reveals, variant B: "glitched loading" ----------
    The page is split into units (.gx-u: a card, a row, a run of case-study text, a figure),
@@ -854,7 +991,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       <img class="on" src="img/04-FACILITY.jpg" alt="Illustration: figures in a yellow room beside a giant black sphere">
       <img src="img/01-HUNT.jpg" alt="">
       <img src="img/02-AMBUSH.jpg" alt="">
-      <img src="img/03-MOMENTS.jpg" alt="">
+      <img src="img/H-HACK.jpg" alt="">
       <img src="img/05-SETTINGS.jpg" alt="">
     </div>
     <div class="wrap hero-content">
@@ -878,44 +1015,63 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   </section>
 
   <section class="section" id="work">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div><span class="eyebrow">Selected work</span><h2>Case studies</h2></div>
+    <div class="wrap idx-split">
+      <div class="idx-aside reveal">
+        <span class="eyebrow">Selected work</span>
+        <h2>Case studies</h2>
         <p>Two products and the features behind them, from early research to release.</p>
+        <nav aria-label="Case studies">
+          <a href="#/work/axis" data-idx="axis"><span>01</span>AXIS</a>
+          <a href="#/work/recurring-schedule" data-idx="recurring-schedule"><span>02</span>Recurring Schedule</a>
+          <a href="#/work/hero-carousel" data-idx="hero-carousel"><span>03</span>Hero Carousel</a>
+          <a href="#/work/design-system" data-idx="design-system"><span>04</span>Design System</a>
+        </nav>
       </div>
-      <div class="work-grid">
-        <a class="work-card wide reveal" href="#/work/axis">
-          <div class="media device"><img src="img/AXIS_home.png" alt="AXIS shown on a TV, laptop, tablet and phone"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
-          <div class="meta"><div><h3>AXIS</h3><p>A user experience management platform designed to empower and manage sport and entertainment services.</p></div><span class="tag mono">2017–2023</span></div>
+      <div class="idx-list">
+        <a class="idx-row reveal" href="#/work/axis" data-idx="axis">
+          <div class="idx-media device"><img src="img/AXIS_home.png" alt="AXIS shown on a TV, laptop, tablet and phone"></div>
+          <div class="idx-text"><h3><span class="idx-title">AXIS</span></h3><p>A user experience management platform designed to empower and manage sport and entertainment services.</p><span class="idx-go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span></div>
         </a>
-        <a class="work-card reveal" href="#/work/recurring-schedule">
-          <div class="media device"><img src="img/Mtribes_home.png" alt="MTRIBES on a laptop and phone, showing analytics and user segmentation"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
-          <div class="meta"><div><h3>MTRIBES: Recurring Schedule</h3><p>Updating existing functionality to solve client pain points.</p></div><span class="tag mono">2022–2023</span></div>
+        <a class="idx-row reveal" href="#/work/recurring-schedule" data-idx="recurring-schedule">
+          <div class="idx-media device"><img src="img/Mtribes_home.png" alt="MTRIBES on a laptop and phone, showing analytics and user segmentation" loading="lazy"></div>
+          <div class="idx-text"><h3><span class="idx-title">MTRIBES: Recurring Schedule</span></h3><p>Updating existing functionality to solve client pain points.</p><span class="idx-go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span></div>
         </a>
-        <a class="work-card reveal" href="#/work/hero-carousel">
-          <div class="media"><img src="img/Outcomes_Hero.png" alt="The finished AXIS hero carousel"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
-          <div class="meta"><div><h3>AXIS: Hero Carousel</h3><p>Creating a hero carousel component for a multi-platform service.</p></div><span class="tag mono">2023</span></div>
+        <a class="idx-row reveal" href="#/work/hero-carousel" data-idx="hero-carousel">
+          <div class="idx-media"><img src="img/axis-hero-header.jpg" alt="The new AXIS hero carousel on tablets and a phone" loading="lazy"></div>
+          <div class="idx-text"><h3><span class="idx-title">AXIS: Hero Carousel</span></h3><p>Creating a hero carousel component for a multi-platform service.</p><span class="idx-go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span></div>
         </a>
-        <a class="work-card wide reveal" href="#/work/design-system">
-          <div class="media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
-          <div class="meta"><div><h3>AXIS: Design System</h3><p>Creating and maintaining a design system for an existing white label product.</p></div><span class="tag mono">2022–2023</span></div>
+        <a class="idx-row reveal" href="#/work/design-system" data-idx="design-system">
+          <div class="idx-media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system" loading="lazy"></div>
+          <div class="idx-text"><h3><span class="idx-title">AXIS: Design System</span></h3><p>Creating and maintaining a design system for an existing white label product.</p><span class="idx-go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span></div>
         </a>
       </div>
     </div>
   </section>
 
   <section class="section" id="projects">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div><span class="eyebrow">Outside work</span><h2>Personal projects</h2></div>
+    <div class="wrap idx-split">
+      <div class="idx-aside reveal">
+        <span class="eyebrow">Outside work</span>
+        <h2>Personal projects</h2>
         <p>Things I design and build for myself, to scratch an itch or learn something new. Some of them you can try right here.</p>
       </div>
-      <div class="work-grid">
-        <a class="work-card wide reveal" href="#/projects/floorplanner">
-          <div class="media"><img src="img/Floorplanner_hero.webp" alt="A flat drawn in Floorplanner: the plan with wall lengths and room areas, cut open to show the kitchen and bedroom in 3D" loading="lazy"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
-          <div class="meta"><div><h3>Floorplanner</h3><p>A sketch-first 3D floor plan editor that runs in the browser. Draw the walls, fit out the rooms, walk around in 3D. Try it on the page.</p></div><span class="tag mono">2026</span></div>
+      <article class="proj reveal">
+        <a class="proj-media" href="#/projects/floorplanner" aria-label="Floorplanner project page">
+          <img src="img/Floorplanner_hero.webp" alt="A flat drawn in Floorplanner: the plan with wall lengths and room areas, cut open to show the kitchen and bedroom in 3D" loading="lazy">
+          <span class="proj-live mono"><i></i>Live in the browser</span>
         </a>
-      </div>
+        <div class="proj-info">
+          <div>
+            <h3>Floorplanner</h3>
+            <p>A sketch-first 3D floor plan editor that runs in the browser. Draw the walls, fit out the rooms, walk around in 3D.</p>
+          </div>
+          <dl class="proj-meta"><dt>Year</dt><dd>2026</dd><dt>Role</dt><dd>Design &amp; build</dd><dt>Built with</dt><dd>TypeScript, React, three.js</dd><dt>Runs on</dt><dd>Desktop, tablet and phone browsers</dd></dl>
+          <div class="btn-row">
+            <a class="btn primary" href="#/projects/floorplanner">Try it on the page <svg><use href="#i-arrow"/></svg></a>
+            <a class="btn" href="https://mheiland17.github.io/FloorPlanner-app/" target="_blank" rel="noopener">Open in new tab <svg><use href="#i-external"/></svg></a>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 
@@ -1821,13 +1977,13 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     <p class="lede">Digital illustrations: cinematic scenes, mostly built in 3D and painted over.</p>
   </header>
   <div class="wrap">
-    <div class="gallery" id="gallery1">
+    <div class="gallery gallery-spaced" id="gallery1">
       <a class="full" href="img/01-HUNT.jpg"><img src="img/01-HUNT.jpg" alt="Hunt" loading="lazy"><span class="label">001 · Hunt</span></a>
       <a class="full" href="img/02-AMBUSH.jpg"><img src="img/02-AMBUSH.jpg" alt="Ambush" loading="lazy"><span class="label">002 · Ambush</span></a>
       <a class="full" href="img/03-MOMENTS.jpg"><img src="img/03-MOMENTS.jpg" alt="Moments" loading="lazy"><span class="label">003 · Moments</span></a>
       <a class="full" href="img/04-FACILITY.jpg"><img src="img/04-FACILITY.jpg" alt="Facility" loading="lazy"><span class="label">004 · Facility</span></a>
       <a class="full" href="img/05-SETTINGS.jpg"><img src="img/05-SETTINGS.jpg" alt="Settings" loading="lazy"><span class="label">005 · Settings</span></a>
-      <a class="full" href="img/06-TROUBLE.jpg"><img src="img/06-TROUBLE.jpg" alt="Trouble" width="1261" height="2000" loading="lazy"><span class="label">006 · Trouble</span></a>      <a href="img/H-SPECOP.jpg"><img src="img/H-SPECOP.jpg" alt="Spec op" loading="lazy"><span class="label">Spec op</span></a>
+      <a class="full" href="img/06-TROUBLE.jpg"><img src="img/06-TROUBLE.jpg" alt="Trouble" width="1261" height="1999" loading="lazy"><span class="label">006 · Trouble</span></a>      <a href="img/H-SPECOP.jpg"><img src="img/H-SPECOP.jpg" alt="Spec op" loading="lazy"><span class="label">Spec op</span></a>
       <a href="img/H-HACK.jpg"><img src="img/H-HACK.jpg" alt="Hack" loading="lazy"><span class="label">Hack</span></a>
       <a href="img/H-BIEDRONKA.jpg"><img src="img/H-BIEDRONKA.jpg" alt="Biedronka" loading="lazy"><span class="label">Biedronka</span></a>
       <a href="img/H-FREQUENCY.jpg"><img src="img/H-FREQUENCY.jpg" alt="Frequency" loading="lazy"><span class="label">Frequency</span></a>
@@ -1851,7 +2007,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       </div>
     </div>
 
-    <div class="gallery" id="gallery2" style="padding-bottom:clamp(64px,9vw,120px)">
+    <div class="gallery gallery-spaced" id="gallery2" style="padding-bottom:clamp(64px,9vw,120px)">
       <a href="img/Blue-studio_1.jpg"><img src="img/Blue-studio_1.jpg" alt="Blue" loading="lazy"><span class="label">Blue</span></a>
       <a href="img/Red_01-studio_1.jpg"><img src="img/Red_01-studio_1.jpg" alt="Red" loading="lazy"><span class="label">Red</span></a>
       <a class="full" href="img/07-OUTPOST.webp"><img src="img/07-OUTPOST.webp" alt="Outpost" width="1125" height="2000" loading="lazy"><span class="label">Outpost</span></a>
@@ -2105,20 +2261,46 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   }
   window.addEventListener('hashchange', route);
 
+  /* ---- Home case study index: mark the case study in view in the side list ---- */
+  {
+    // The current one is the last row whose top has passed the middle of the screen.
+    const idxLinks = $$('.idx-aside nav a'), idxRows = $$('.idx-row');
+    let idxQueued = false;
+    const idxMark = () => {
+      idxQueued = false;
+      const mid = innerHeight / 2;
+      let cur = idxRows[0];
+      idxRows.forEach((r) => { if (r.getBoundingClientRect().top < mid) cur = r; });
+      idxLinks.forEach((l) => l.classList.toggle('on', l.dataset.idx === cur.dataset.idx));
+    };
+    if (idxRows.length) {
+      addEventListener('scroll', () => { if (!idxQueued) { idxQueued = true; requestAnimationFrame(idxMark); } }, { passive: true });
+      idxMark();
+    }
+  }
+
   /* ---- Home hero slideshow ---- */
   const slides = $$('#heroSlides img');
-  const labels = ['004 · Facility', '001 · Hunt', '002 · Ambush', '003 · Moments', '005 · Settings'];
+  const labels = ['004 · Facility', '001 · Hunt', '002 · Ambush', 'Hack', '005 · Settings'];
   const dots = $('#heroDots');
   slides.forEach((_, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', `Show illustration ${i + 1}`); b.onclick = () => { show(i); restart(); }; dots.appendChild(b); });
   let cur = 0, timer = null;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let onSlide = null;   // set by the ambient scans
+  const SLIDE_MS = 10000;
+  let nextSlideAt = Infinity;   // when the carousel will next change (the scans avoid starting just before)
   function show(i) {
+    nextSlideAt = performance.now() + SLIDE_MS;
     cur = (i + slides.length) % slides.length;
     slides.forEach((s, j) => s.classList.toggle('on', j === cur));
     $$('button', dots).forEach((d, j) => d.classList.toggle('on', j === cur));
     $('#heroLabel').textContent = labels[cur];
+    onSlide?.(cur);
   }
-  function restart() { clearInterval(timer); if (!reduce && !document.hidden && !introRunning) timer = setInterval(() => show(cur + 1), 7000); }
+  function restart() {
+    clearInterval(timer); nextSlideAt = Infinity;
+    if (!reduce && !document.hidden && !introRunning) { timer = setInterval(() => show(cur + 1), SLIDE_MS); nextSlideAt = performance.now() + SLIDE_MS; }
+  }
   function hero(on) { if (on) restart(); else clearInterval(timer); }
   document.addEventListener('visibilitychange', () => hero(!document.hidden && $('[data-route="home"]').classList.contains('active')));
   show(0);
@@ -2599,23 +2781,30 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const s = document.createElement('div'); s.className = 'sweep'; introFx?.appendChild(s);
       heroSlides.classList.add('flick');
     });
-    // As it powers on, hard-cut through every slide (~2s in all), landing back on the first.
-    const FLICK = 400 / BASE_SLOW;   // 400ms per slide at 1× (~530ms at the landing's 0.75×)
+    // As it powers on, hard-cut through every slide (~1s in all), landing back on the first.
+    const FLICK = 200 / SLOW;   // 200ms per slide in real time (later() multiplies by SLOW)
+    const CYCLE_DELAY = 400 / SLOW;   // the first image holds 400ms (real time) before the cuts start
     for (let i = 1; i <= slides.length; i++)
-      later(1000 + HOLD + FLICK * i, () => {
+      later(1000 + HOLD + CYCLE_DELAY + FLICK * i, () => {
         show(i % slides.length);
         if (i === slides.length) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
       });
     // Scan bits flicker around while things load in.
-    for (let i = 0; i < 16; i++) later(rnd(950, 2900) + HOLD, randomBit);
+    // (They run on into the pause before the hero copy, so the screen isn't static.)
+    const bitsEnd = 1000 + CYCLE_DELAY + FLICK * slides.length + 1000 / SLOW + 400;
+    for (let i = 0; i < 20; i++) later(rnd(950, Math.max(2900, bitsEnd)) + HOLD, randomBit);
 
-    // 2.85s on: header, then hero copy and buttons, each framed and glitched in.
+    // 2.85s on: header, then (a second after the slide cycle ends) hero copy and buttons,
+    // each framed and glitched in.
     const order = [
       ...$$('#header [data-intro]').filter((el) => el.offsetParent !== null),
       ...$$('.hero [data-intro]'),
     ];
-    let t = 1350 + HOLD;
+    // The hero copy and buttons wait until a second (real time) after the slide cycle lands.
+    const heroStart = 1000 + HOLD + CYCLE_DELAY + FLICK * slides.length + 1000 / SLOW;
+    let t = 1350 + HOLD, heroReached = false;
     order.forEach((el) => {
+      if (!heroReached && el.closest('.hero')) { heroReached = true; t = Math.max(t, heroStart); }
       const big = el.matches('h1, .eyebrow, .hero-intro p, .btn-row .btn.primary');
       if (big) later(t - 90, () => frame(el, el.tagName === 'H1' ? 520 : 380));
       const typed = typesOut(el), dur = typed ? typeLen(el) : 0;
@@ -2634,39 +2823,70 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   }
 
   /* ---- Landing B, after the boot: ambient scans over the hero image ----
-     Bursts of 2–3 readouts, links, crosshairs, bars or brackets within 1–2s. The last bit of a
-     burst stays on until the next burst starts (4–8s later), then flickers out. Bits sit over
-     the image (right and upper area), clear of the intro text. A burst is skipped (and retried
-     shortly) while the intro plays, off Home, with the hero scrolled away or the tab hidden.
-     Timings follow the panel's animation speed. */
+     Bursts of 2–3 bits within 1–2s, 4–8s apart. The last bit of a burst holds on through the
+     next burst too, and only flickers out when the burst after that starts, so there are
+     usually two held bits on screen. A burst is skipped (and retried shortly) while the intro
+     plays, off Home, with the hero scrolled away or the tab hidden. Timings follow the panel's
+     animation speed.
+     Lab "Image scans": A = readouts, links, crosshairs, bars and brackets at random spots on the
+     right and upper area; B = the scans assess the slide itself: brackets lock onto heads,
+     figures, vehicles and landmarks (POI below), a scan line passes over them and a tag reads
+     out what was found; C = as B, with the tag on a diagonal leader off a corner. Every scan
+     is placed clear of the hero text, the header, the screen edges and the other scans (see
+     the collision checks below). A slide change releases B/C's targets and brings the next
+     burst forward. */
   const ambFx = document.createElement('div');
   ambFx.className = 'intro-fx ambient-fx';
   heroEl.appendChild(ambFx);
-  let ambOn = false, ambTimer = null, ambHeld = null;
+  let ambOn = false, ambTimer = null, ambHeld = [];
+  let ambScans = (window.__variants || {}).scans || 'A';
+  const ambK = () => SLOW / (BASE_SLOW * LANDING);
   function ambientStart() { if (ambOn || reduce) return; ambOn = true; ambientNext(rnd(1500, 3000)); }
   function ambientStop() { ambOn = false; clearTimeout(ambTimer); clearAmbient(); }
-  function clearAmbient() { ambFx.replaceChildren(); ambHeld = null; }
+  function clearAmbient() { ambFx.replaceChildren(); ambHeld = []; }
   function ambientNext(ms) { clearTimeout(ambTimer); ambTimer = setTimeout(ambientBurst, ms); }
-  // The held bit from the last burst flickers out.
-  function releaseHeld() {
-    const d = ambHeld; if (!d) return;
-    ambHeld = null;
+  // Held bits flicker out, all but the newest `keep`.
+  function releaseHeld(keep = 0) {
+    while (ambHeld.length > keep) releaseBit(ambHeld.shift());
+  }
+  // A bit flickers out, unless it's a target still micro-scanning or only just locked: that
+  // one finishes its scan and stays up a beat (d._safeUntil) before it goes.
+  function releaseBit(d) {
+    const wait = (d._safeUntil || 0) - performance.now();
+    if (wait > 0) { setTimeout(() => releaseBit(d), wait); return; }
+    if (!d.isConnected || d.classList.contains('release')) return;
     d.classList.remove('hold'); d.classList.add('release');
     setTimeout(() => d.remove(), 400);
   }
+  onSlide = () => {
+    if (ambScans === 'A' || !ambHeld.length) return;
+    releaseHeld();
+    if (ambOn && !introRunning) ambientNext(rnd(1200, 2000) * ambK());
+  };
   function ambientBurst() {
     if (!ambOn) return;
     const home = $('[data-route="home"]').classList.contains('active');
     if (document.hidden || !home || introRunning || heroEl.getBoundingClientRect().bottom < 120) { ambientNext(1500); return; }
-    releaseHeld();
-    const k = SLOW / (BASE_SLOW * LANDING), n = Math.random() < .45 ? 3 : 2, span = rnd(1000, 2000);
+    // The last burst's held bit stays on through this one (C keeps the last two).
+    releaseHeld(ambScans === 'C' ? 2 : 1);
+    const k = ambK(), n = Math.random() < .45 ? 3 : 2, span = rnd(1000, 2000);
     const times = Array.from({ length: n }, (_, i) => i === 0 ? 0 : rnd(150, span)).sort((a, b) => a - b);
-    times.forEach((t, i) => setTimeout(() => ambientBit(i === times.length - 1), t * k));
-    ambientNext((times[times.length - 1] + rnd(4000, 8000)) * k);   // 4–8s until the next burst
+    const bit = ambScans === 'A' ? ambientBit : targetBit;
+    // C sometimes (about 4 in 10 bursts) locks onto two objects in one burst, not just one.
+    const holds = ambScans === 'C' && n > 1 && Math.random() < .4 ? 2 : 1;
+    times.forEach((t, i) => setTimeout(() => bit(i >= times.length - holds), t * k));
+    // 4–8s until the next burst; B/C's targets clear on each slide change (every 10s), so
+    // their bursts come every 2.5–4.5s to build up held targets within a slide.
+    ambientNext((times[times.length - 1] + (ambScans === 'A' ? rnd(4000, 8000) : rnd(2500, 4500))) * k);
+  }
+  function holdOrExpire(d, hold, life) {
+    if (hold) { releaseHeld(2); d.classList.add('hold'); ambHeld.push(d); }   // three held at most
+    ambFx.appendChild(d);
+    if (!hold) setTimeout(() => d.remove(), life + 60);
   }
   function ambientBit(hold) {
     if (!ambOn) return;
-    const k = SLOW / (BASE_SLOW * LANDING), life = rnd(450, 1100) * k, r = Math.random();
+    const k = ambK(), life = rnd(450, 1100) * k, r = Math.random();
     const acc = Math.random() < .4 ? ' acc' : '';
     const d = document.createElement('div');
     let left = rnd(45, 90);
@@ -2680,13 +2900,347 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     else if (r < .74) d.className = 'hud cross' + (Math.random() < .3 ? ' acc' : '');
     else if (r < .88) { d.className = 'hud bar acc'; d.style.width = rnd(40, 120) + 'px'; }
     else { d.className = 'hud box'; d.style.width = rnd(50, 140) + 'px'; d.style.height = rnd(30, 90) + 'px'; }
-    d.style.left = left + '%';
-    d.style.top = rnd(9, 46) + '%';
     d.style.setProperty('--life', life + 'ms');
-    if (hold) { d.classList.add('hold'); ambHeld = d; }
+    // Try a few spots and keep the first that's clear of text, edges and other scans.
+    const obs = obstacles(d), lo = left - 3;
     ambFx.appendChild(d);
-    if (!hold) setTimeout(() => d.remove(), life + 60);
+    placeBest(Array.from({ length: 8 }, (_, i) => [i ? rnd(lo - 10, 90) : left, rnd(9, 46)]),
+      ([x, y]) => { d.style.left = x + '%'; d.style.top = y + '%'; return clash(rectIn(d), obs); });
+    holdOrExpire(d, hold, life);
   }
+
+  /* ---- Collision checks for the scans, all in hero pixels ----
+     Obstacles: the hero text (measured as text, not block boxes), the header, and every other
+     scan still on screen (its box and its tag). A placement's cost is how much of it overlaps
+     an obstacle, plus (double-weighted) how much falls off the hero's edges. */
+  const extent = (el) => { const rg = document.createRange(); rg.selectNodeContents(el); return rg.getBoundingClientRect(); };
+  function rectIn(el) {
+    const r = el.getBoundingClientRect(), H = heroEl.getBoundingClientRect();
+    return { l: r.left - H.left, t: r.top - H.top, r: r.right - H.left, b: r.bottom - H.top };
+  }
+  const pad = (r, n) => ({ l: r.l - n, t: r.t - n, r: r.r + n, b: r.b + n });
+  const overlap = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
+  function obstacles(self) {
+    const H = heroEl.getBoundingClientRect(), list = [];
+    const add = (r, n) => { if (r.width) list.push(pad({ l: r.left - H.left, t: r.top - H.top, r: r.right - H.left, b: r.bottom - H.top }, n)); };
+    $$('.hero [data-intro]').forEach((el) => add(extent(el), 20));
+    add($('#header').getBoundingClientRect(), 12);
+    [...ambFx.children].forEach((el) => {
+      if (el === self || el.classList.contains('release')) return;
+      add(el.getBoundingClientRect(), 8);
+      const tag = el.querySelector('.tag'); if (tag) add(tag.getBoundingClientRect(), 8);
+    });
+    return list;
+  }
+  function clash(r, obs) {
+    const W = heroEl.clientWidth, Hh = heroEl.clientHeight, m = 10;
+    const area = (r.r - r.l) * (r.b - r.t);
+    const inside = overlap(r, { l: m, t: m, r: W - m, b: Hh - m });
+    return obs.reduce((a, o) => a + overlap(r, o), 0) + (area - inside) * 2;
+  }
+  // Applies each option in turn until one costs nothing; otherwise settles on the cheapest.
+  function placeBest(options, apply) {
+    let best = null, bestCost = Infinity;
+    for (const o of options) {
+      const c = apply(o);
+      if (c === 0) return o;
+      if (c < bestCost) { best = o; bestCost = c; }
+    }
+    apply(best);
+    return best;
+  }
+
+  /* Image scans B: points of interest per slide, as boxes in the image's own pixels
+     [x0, y0, x1, y1, kind, name], mapped onto the hero through object-fit: cover. */
+  const POI = {
+    '04-FACILITY.jpg': { w: 2000, h: 698, p: [
+      [520, 422, 562, 456, 'subj', 'HEAD'], [646, 424, 688, 458, 'subj', 'HEAD'],
+      [512, 420, 594, 574, 'subj', 'SUBJECT'], [636, 424, 714, 574, 'subj', 'SUBJECT'], [716, 474, 768, 558, 'subj', 'SUBJECT'],
+      [1132, 108, 1538, 508, 'obj', 'ANOMALY'], [996, 508, 1030, 554, 'obj', 'MARKER'], [1596, 468, 1620, 498, 'obj', 'MARKER']] },
+    '01-HUNT.jpg': { w: 2000, h: 698, p: [
+      [598, 260, 646, 312, 'subj', 'HEAD'], [716, 254, 764, 306, 'subj', 'HEAD'],
+      [586, 22, 692, 162, 'struct', 'EFFIGY'], [916, 16, 1028, 160, 'struct', 'EFFIGY'], [1176, 12, 1290, 152, 'struct', 'EFFIGY'],
+      [632, 458, 818, 508, 'veh', 'VEHICLE'], [1834, 190, 1884, 274, 'obj', 'SIGNAGE'], [1418, 0, 1664, 318, 'struct', 'SPIRE']] },
+    '02-AMBUSH.jpg': { w: 2000, h: 698, p: [
+      [1242, 10, 1412, 202, 'struct', 'DOME'], [1558, 200, 1952, 334, 'struct', 'EMPLACEMENT'], [0, 128, 498, 444, 'struct', 'ARTILLERY'],
+      [932, 476, 1292, 644, 'veh', 'VEHICLE'], [576, 482, 662, 538, 'veh', 'VEHICLE'], [674, 484, 730, 520, 'veh', 'VEHICLE'],
+      [906, 398, 948, 448, 'obj', 'SIGNAGE'], [708, 240, 802, 382, 'struct', 'TOWER']] },
+    'H-HACK.jpg': { w: 1440, h: 808, p: [
+      [644, 204, 878, 684, 'obj', 'TERMINAL'], [662, 30, 790, 216, 'obj', 'ANTENNA'], [732, 396, 794, 640, 'subj', 'SUBJECT'],
+      [298, 460, 474, 604, 'veh', 'VEHICLE'], [1040, 380, 1340, 540, 'struct', 'STRUCTURE']] },
+    '05-SETTINGS.jpg': { w: 2000, h: 698, p: [
+      [260, 48, 1208, 134, 'sig', 'EMISSION'], [416, 186, 644, 334, 'sig', 'OCCUPANCY'], [686, 552, 884, 614, 'sig', 'LIGHTS'],
+      [1598, 236, 1994, 374, 'obj', 'FOLIAGE'], [1512, 332, 1614, 362, 'veh', 'VESSEL'], [260, 0, 1210, 400, 'struct', 'STRUCTURE']] },
+  };
+  const READ = {
+    subj: () => [`ID ${pick(['UNK', '07', '12', '31', '44'])}`, `MATCH ${rnd(61, 99) | 0}%`, 'BIOMETRIC', 'TRACKING', `HR ${rnd(62, 99) | 0}`],
+    veh: () => [`PLATE ${pick(['—', 'X41', '7JD', 'NULL'])}`, `V ${rnd(0, 64) | 0} KM/H`, 'TRACKING', 'HEAT SIG'],
+    obj: () => [`SCAN ${rnd(40, 100) | 0}%`, 'UNCLASSIFIED', 'MASS ?', `0x${(Math.random() * 65535 | 0).toString(16).toUpperCase()}`],
+    struct: () => [`RANGE ${rnd(.3, 4.8).toFixed(1)}KM`, 'MAPPING', `ALT ${rnd(40, 900) | 0}M`, 'SURVEY'],
+    sig: () => [`${rnd(400, 620) | 0}NM`, 'LUMEN +', 'SIGNAL', `FREQ ${rnd(20, 90) | 0}HZ`],
+  };
+  // The current slide's points in hero pixels, minus any under the intro text, header or
+  // another scan, mostly off screen, or already held.
+  // Image pixels → hero pixels for a slide: object-fit: cover, then the slide's live zoom (each
+  // slide eases from scale 1.06 to 1 over 9s, about its centre), read from its current transform.
+  function slideMap(img, meta) {
+    const H = heroEl.getBoundingClientRect(), s = Math.max(H.width / meta.w, H.height / meta.h);
+    const dx = (H.width - meta.w * s) / 2, dy = (H.height - meta.h * s) / 2;
+    let z = 1;
+    try { const tf = getComputedStyle(img).transform; if (tf && tf !== 'none') z = new DOMMatrixReadOnly(tf).a || 1; } catch (e) {}
+    const cx = H.width / 2, cy = H.height / 2;
+    return ([x0, y0, x1, y1]) => {
+      const l = cx + (dx + x0 * s - cx) * z, t = cy + (dy + y0 * s - cy) * z;
+      return { l, t, w: (x1 - x0) * s * z, h: (y1 - y0) * s * z };
+    };
+  }
+  // Locked targets follow the zoom: while any are on screen, each frame re-maps its box.
+  let trackRaf = 0;
+  function trackTargets() {
+    if (trackRaf) return;
+    const step = () => {
+      const live = [...ambFx.children].filter((d) => d._box);
+      if (!live.length) { trackRaf = 0; return; }
+      const maps = new Map();
+      live.forEach((d) => {
+        if (!maps.has(d._img)) maps.set(d._img, slideMap(d._img, d._meta));
+        const b = maps.get(d._img)(d._box);
+        Object.assign(d.style, { left: b.l + 'px', top: b.t + 'px', width: b.w + 'px', height: b.h + 'px' });
+      });
+      trackRaf = requestAnimationFrame(step);
+    };
+    trackRaf = requestAnimationFrame(step);
+  }
+  function heroTargets() {
+    const img = slides[cur], meta = POI[(img.getAttribute('src') || '').split('/').pop()];
+    if (!meta) return [];
+    const H = heroEl.getBoundingClientRect(), map = slideMap(img, meta);
+    const obs = obstacles();
+    const held = new Set(ambHeld.map((d) => d._poi));
+    return meta.p.map(([x0, y0, x1, y1, kind, name], i) => ({ i, kind, name, img, meta, box: [x0, y0, x1, y1],
+      ...map([x0, y0, x1, y1]) }))
+      .filter((p) => {
+        if (held.has(p.i) || p.w < 14 || p.h < 14) return false;
+        const vw = Math.min(H.width, p.l + p.w) - Math.max(0, p.l), vh = Math.min(H.height, p.t + p.h) - Math.max(0, p.t);
+        if (vw < p.w * .6 || vh < p.h * .6) return false;
+        // A big target may graze the text, header or another scan a little, but not sit under it.
+        const box = { l: p.l, t: p.t, r: p.l + p.w, b: p.t + p.h };
+        return obs.reduce((a, o) => a + overlap(box, o), 0) < p.w * p.h * .15;
+      });
+  }
+  // Where a target's tag can go: right or left of the box (top-aligned), or below or above it
+  // (left-aligned, or right-aligned with "e"). The order is the preference.
+  const TAG_POS = ['r', 'l', 'b', 'a', 'be', 'ae'];
+  // Option C's diagonal leaders, off the top-right, top-left, bottom-right or bottom-left corner.
+  const TAG_POS_DIAG = ['ur', 'ul', 'dr', 'dl'];
+  function targetBit(hold) {
+    if (!ambOn) return;
+    const pts = heroTargets();
+    if (!pts.length) return ambientBit(hold);
+    const life = rnd(600, 1200) * ambK(), p = pick(pts), d = document.createElement('div');
+    Object.assign(d.style, { left: p.l + 'px', top: p.t + 'px', width: p.w + 'px', height: p.h + 'px' });
+    d.style.setProperty('--life', life + 'ms');
+    d._poi = p.i;
+    Object.assign(d, { _box: p.box, _img: p.img, _meta: p.meta });
+    trackTargets();
+    // C: a scan that couldn't finish (2s) and show (1.5s) before the slide changes doesn't start;
+    // a quick crosshair goes there instead, or nothing, for the burst's held bit.
+    const late = ambScans === 'C' && nextSlideAt - performance.now() < 3500 * ambK();
+    if (late && hold) return;
+    if (late || (!hold && Math.random() < .5)) {
+      // A quick crosshair on its centre.
+      d.className = 'hud tgt quick';
+      d.innerHTML = '<span class="x"></span>';
+    } else {
+      // Corner brackets, a scan line passing down once, and a tag on a wire. The tag tries
+      // each side in turn (measured in place) and takes the first that's clear of the text,
+      // the header, the screen edges and other scans, or else the least crowded.
+      d.className = 'hud tgt';
+      d.style.setProperty('--wl', Math.round(rnd(24, 60)) + 'px');
+      d.innerHTML = '<i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><span class="sc"></span>'
+        + '<span class="tag"><span class="wire"></span>'
+        + `<span class="tx"><b>${p.name} ${String(p.i + 1).padStart(2, '0')}</b><small>${pick(READ[p.kind]())}</small></span></span>`;
+      const obs = obstacles(d), tag = d.querySelector('.tag');
+      ambFx.appendChild(d);
+      placeBest(ambScans === 'C' ? TAG_POS_DIAG : TAG_POS, (pos) => { d.dataset.pos = pos; return clash(rectIn(tag), obs); });
+      if (ambScans === 'C') {
+        // The micro-scan comes first, so a short-lived target stays up that much longer.
+        const scanMs = microScan(d, p);
+        if (!hold) {
+          // A short-lived target: on like a held one (no flicker-out timed to its life), then
+          // released a second or so after it locks.
+          d.classList.add('hold');
+          setTimeout(() => releaseBit(d), scanMs + rnd(900, 1500) * ambK());
+          return;
+        }
+      }
+    }
+    holdOrExpire(d, hold, life);
+  }
+  // C: before locking on, a small triangle hops across 5–6 points inside the target (the last
+  // near its centre), leaving fading ticks; then the brackets snap in and the tag follows.
+  function microScan(d, p) {
+    // 5–6 hops spread over about 2s (330–400ms each), so it reads as a deliberate sweep.
+    const k = ambK(), n = 5 + (Math.random() * 2 | 0), TOTAL = 2000;
+    // Uneven spacing: each gap is ±35% of even. Rarely (1 in 5 scans) three hops come in a
+    // quick run, 80–110ms apart; the other gaps stretch so the scan still lasts about 2s.
+    const gaps = Array.from({ length: n }, () => rnd(.65, 1.35));
+    let quick = [];
+    if (n >= 4 && Math.random() < .2) {
+      const j = 1 + (Math.random() * (n - 3) | 0);   // gaps j and j+1: hops j, j+1, j+2 bunch up
+      quick = [j, j + 1];
+    }
+    const quickMs = quick.map(() => rnd(80, 110));
+    const restSum = gaps.reduce((a, g, i) => a + (quick.includes(i) ? 0 : g), 0);
+    const restMs = TOTAL - quickMs.reduce((a, b) => a + b, 0);
+    const ms = gaps.map((g, i) => quick.includes(i) ? quickMs[quick.indexOf(i)] : g / restSum * restMs);
+    const at = ms.map((_, i) => ms.slice(0, i).reduce((a, b) => a + b, 0));   // hop i fires at at[i]
+    d.classList.add('pre');
+    const tri = document.createElement('span'); tri.className = 'mtri';
+    tri.innerHTML = '<svg viewBox="0 0 30 22" aria-hidden="true"><path d="M15 .5 29.5 21.5H.5Z" fill="none" stroke="currentColor" stroke-width="1"/></svg>';
+    d.appendChild(tri);
+    for (let i = 0; i < n; i++) {
+      const last = i === n - 1;
+      const x = last ? rnd(.42, .58) : rnd(.15, .85), y = last ? rnd(.42, .58) : rnd(.15, .85);
+      setTimeout(() => {
+        if (!d.isConnected) return;
+        tri.style.left = x * 100 + '%'; tri.style.top = y * 100 + '%';
+        const t = document.createElement('span'); t.className = 'mtick';
+        t.style.left = x * 100 + '%'; t.style.top = y * 100 + '%';
+        d.appendChild(t);
+        setTimeout(() => t.remove(), 700 * k);
+      }, at[i] * k);
+    }
+    setTimeout(() => { tri.remove(); d.classList.remove('pre'); d.classList.add('snap'); }, TOTAL * k);
+    // Once started, the scan is protected: nothing releases it until a beat after it locks.
+    d._safeUntil = performance.now() + (TOTAL + 1200) * k;
+    return TOTAL * k;
+  }
+
+  /* ---- Lab "Illustration scans" B: the hero's image scans, all over the Illustrations page ----
+     Each gallery piece gets its own scan layer. Once at least 75% of a piece has been on screen
+     for 2 seconds it runs bursts like the hero's "Assess, diagonal": a triangle micro-scans a target, the brackets snap on and a tag hangs off a
+     corner. Up to two targets stay held per piece; all of them flicker out when it scrolls
+     away. Pieces with points of interest (the hero slides) lock onto those; the rest get
+     targets picked inside the part of the image that's on screen. */
+  let illScans = (window.__variants || {}).illscans || 'A';
+  const illState = new Map();   // gallery link → { fx, held, timer, on }
+  const ILL_NAMES = { obj: ['ANOMALY', 'MARKER', 'OBJECT'], struct: ['STRUCTURE', 'SECTOR', 'SURVEY'], sig: ['SIGNAL', 'EMISSION', 'HEAT'] };
+  // A piece counts as in view when at least 75% of it is on screen, or, for a piece taller than
+  // the screen, when it fills at least 75% of the screen's height.
+  const ILL_IN_VIEW = .75, ILL_DELAY = 2000;
+  const illIO = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      const seen = e.intersectionRect.height / Math.min(e.boundingClientRect.height, innerHeight);
+      e.isIntersecting && seen >= ILL_IN_VIEW - .005 ? illStart(e.target) : illStop(e.target);
+    });
+  }, { threshold: Array.from({ length: 51 }, (_, i) => i / 50) }) : null;
+  function illEnable(on) {
+    on = on && !reduce && !!illIO;
+    $$('#gallery1 > a, #gallery2 > a').forEach((a) => {
+      if (on) { illIO.observe(a); return; }
+      illIO?.unobserve(a);
+      const s = illState.get(a);
+      if (s) { clearTimeout(s.timer); s.fx.remove(); illState.delete(a); }
+    });
+  }
+  function illStart(a) {
+    let s = illState.get(a);
+    if (!s) {
+      s = { fx: document.createElement('div'), held: [], timer: 0, on: false };
+      s.fx.className = 'intro-fx ambient-fx';
+      a.appendChild(s.fx);
+      illState.set(a, s);
+    }
+    if (s.on) return;
+    s.on = true;
+    // Scanning starts once the piece has stayed in view for 2 seconds.
+    clearTimeout(s.timer);
+    s.timer = setTimeout(() => illBurst(a), ILL_DELAY * ambK());
+  }
+  function illStop(a) {
+    const s = illState.get(a);
+    if (!s || !s.on) return;
+    s.on = false; clearTimeout(s.timer);
+    s.held = [];
+    [...s.fx.children].forEach((d) => d.classList.contains('tgt') ? releaseBit(d) : d.remove());
+  }
+  function illBurst(a) {
+    const s = illState.get(a);
+    if (!s || !s.on) return;
+    const k = ambK();
+    if (document.hidden) { s.timer = setTimeout(() => illBurst(a), 1500); return; }
+    while (s.held.length > 1) releaseBit(s.held.shift());
+    const n = Math.random() < .5 ? 2 : 1;
+    for (let i = 0; i < n; i++) setTimeout(() => s.on && illTarget(a, s, i === n - 1), i * rnd(400, 1000) * k);
+    s.timer = setTimeout(() => illBurst(a), rnd(3000, 5000) * k);
+  }
+  function illTarget(a, s, hold) {
+    const W = a.clientWidth, H = a.clientHeight, R = a.getBoundingClientRect();
+    // The part of the piece that's on screen, in its own pixels.
+    const vt = Math.max(0, -R.top), vb = Math.min(H, innerHeight - R.top);
+    if (vb - vt < 120) return;
+    const view = { l: 10, t: vt + 10, r: W - 10, b: vb - 10 };
+    const busy = [...s.fx.children].filter((d) => d.classList.contains('tgt') && !d.classList.contains('release'))
+      .flatMap((d) => [d, d.querySelector('.tag')].filter(Boolean)).map((el) => {
+        const r = el.getBoundingClientRect();
+        return pad({ l: r.left - R.left, t: r.top - R.top, r: r.right - R.left, b: r.bottom - R.top }, 8);
+      });
+    const free = (b) => busy.reduce((acc, o) => acc + overlap(b, o), 0) < (b.r - b.l) * (b.b - b.t) * .1;
+    const img = a.querySelector('img'), meta = POI[(img.getAttribute('src') || '').split('/').pop()];
+    let p = null;
+    if (meta) {
+      const sc = Math.max(W / meta.w, H / meta.h), dx = (W - meta.w * sc) / 2, dy = (H - meta.h * sc) / 2;
+      const held = new Set(s.held.map((d) => d._poi));
+      const pts = meta.p.map(([x0, y0, x1, y1, kind, name], i) => ({ i, kind, name,
+        l: dx + x0 * sc, t: dy + y0 * sc, w: (x1 - x0) * sc, h: (y1 - y0) * sc }))
+        .filter((q) => !held.has(q.i) && q.w >= 14 && q.h >= 14 && q.t >= view.t && q.t + q.h <= view.b
+          && free({ l: q.l, t: q.t, r: q.l + q.w, b: q.t + q.h }));
+      if (pts.length) p = pick(pts);
+    }
+    if (!p) {
+      // A spot inside the visible part, clear of the other targets.
+      for (let tries = 0; tries < 8 && !p; tries++) {
+        const w = rnd(.07, .2) * W, h = Math.min(w * rnd(.6, 1.3), (view.b - view.t) * .5);
+        const l = rnd(view.l + 20, view.r - w - 20), t = rnd(view.t + 20, view.b - h - 20);
+        const kind = pick(Object.keys(ILL_NAMES));
+        const q = { i: -1, kind, name: pick(ILL_NAMES[kind]), l, t, w, h };
+        if (w > 20 && h > 20 && free({ l, t, r: l + w, b: t + h })) p = q;
+      }
+    }
+    if (!p) return;
+    const k = ambK(), d = document.createElement('div');
+    Object.assign(d.style, { left: p.l + 'px', top: p.t + 'px', width: p.w + 'px', height: p.h + 'px' });
+    d._poi = p.i;
+    if (!hold && Math.random() < .35) {
+      // A quick crosshair on its centre.
+      const life = rnd(600, 1200) * k;
+      d.className = 'hud tgt quick';
+      d.style.setProperty('--life', life + 'ms');
+      d.innerHTML = '<span class="x"></span>';
+      s.fx.appendChild(d);
+      setTimeout(() => d.remove(), life + 60);
+      return;
+    }
+    d.className = 'hud tgt';
+    d.style.setProperty('--wl', Math.round(rnd(24, 60)) + 'px');
+    const label = p.i >= 0 ? `${p.name} ${String(p.i + 1).padStart(2, '0')}` : `${p.name} ${String(rnd(1, 99) | 0).padStart(2, '0')}`;
+    d.innerHTML = '<i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><span class="sc"></span>'
+      + `<span class="tag"><span class="wire"></span><span class="tx"><b>${label}</b><small>${pick(READ[p.kind]())}</small></span></span>`;
+    s.fx.appendChild(d);
+    const tag = d.querySelector('.tag');
+    placeBest(TAG_POS_DIAG, (pos) => {
+      d.dataset.pos = pos;
+      const r = tag.getBoundingClientRect(), b = { l: r.left - R.left, t: r.top - R.top, r: r.right - R.left, b: r.bottom - R.top };
+      const area = (b.r - b.l) * (b.b - b.t);
+      return busy.reduce((acc, o) => acc + overlap(b, o), 0) + (area - overlap(b, view)) * 2;
+    });
+    const scanMs = microScan(d, p);
+    d.classList.add('hold');
+    if (hold) s.held.push(d);
+    else setTimeout(() => releaseBit(d), scanMs + rnd(900, 1500) * k);
+  }
+  illEnable(illScans === 'B');
 
   /* =====================================================================
      A/B lab: the floating test-tube button and its panel.
@@ -2732,6 +3286,36 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
         if (variants.landing === 'B') runIntroB();
         window.scrollTo({ top: 0, behavior: 'instant' });
         rearmReveals();
+      },
+    },
+    {
+      id: 'scans', title: 'Image scans',
+      options: [
+        { v: 'A', label: 'Random', desc: 'After the boot, readouts, crosshairs and brackets flicker at random spots over the image.' },
+        { v: 'B', label: 'Assess the image', desc: 'The scans lock onto things in the current slide (heads, figures, vehicles, landmarks): brackets, a scan line and a readout tag on a straight wire, placed clear of the text and screen edges.' },
+        { v: 'C', label: 'Assess, diagonal', desc: 'As Assess the image, but each tag hangs off a corner on a diagonal leader. A small triangle micro-scans a few points of the target before the brackets snap on, and some bursts lock onto two objects.' },
+      ],
+      home: true,
+      // Needs the boot sequence's ambient scans; switches them over and starts a burst shortly.
+      play: (v) => {
+        ambScans = v;
+        clearAmbient();
+        if (ambOn) ambientNext(400);
+      },
+    },
+    {
+      id: 'illscans', title: 'Illustration scans',
+      options: [
+        { v: 'A', label: 'None', desc: 'The Illustrations page has no scans over the artworks.' },
+        { v: 'B', label: 'Scan as you scroll', desc: 'The hero\'s image scans run all over the Illustrations page: once at least 75% of a piece has been in view for 2 seconds, targets micro-scan, lock on and tag what they find, and flicker out as it scrolls away.' },
+      ],
+      // Goes to the Illustrations page to show it.
+      play: (v) => {
+        illScans = v;
+        illEnable(false);
+        illEnable(v === 'B');
+        if (location.hash !== '#/illustrations') location.hash = '#/illustrations';
+        else window.scrollTo({ top: 0, behavior: 'instant' });
       },
     },
   ];

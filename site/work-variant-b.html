@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work sections — variation B</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="img/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300..800;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same tokens as index.html, so this drops straight in. */
+:root {
+  --bg: #0b0c0d; --bg-2: #121416; --bg-3: #1a1d20; --line: #262a2e;
+  --text: #eceeef; --text-2: #a6acb2; --text-3: #6f767d;
+  --accent: #ffce3c; --accent-ink: #1a1400;
+  --radius: 14px; --radius-lg: 22px; --maxw: 1240px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --font: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+  --ease: cubic-bezier(.2,.7,.2,1);
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  --bg: #f6f5f2; --bg-2: #ecebe6; --bg-3: #e2e0da; --line: #d6d3cc;
+  --text: #121314; --text-2: #4c5157; --text-3: #80868c;
+  --accent: #f5bc1a; --accent-ink: #1a1400;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 17px/1.6 var(--font); letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased; overflow-x: clip; transition: background-color .3s, color .3s; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+.mono { font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.eyebrow { font: 500 12.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); display: inline-flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--accent); border-radius: 2px; }
+
+/* Preview chrome (not part of the design) */
+.pv { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.pv .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 56px; }
+.pv span { color: var(--text-3); }
+.pv button { font: 500 13px var(--font); color: var(--text); background: none; border: 1px solid var(--line); border-radius: 999px; height: 34px; padding: 0 14px; cursor: pointer; }
+.pv button:hover { background: var(--bg-3); }
+
+/* ---------- Layout: a sticky heading column beside a list ---------- */
+.section { padding: clamp(72px, 9vw, 120px) 0; }
+.section + .section { border-top: 1px solid var(--line); }
+.split { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.aside { position: sticky; top: 96px; display: grid; gap: 18px; }
+.aside h2 { font-size: clamp(34px, 4vw, 48px); }
+.aside p { color: var(--text-2); font-size: 16px; }
+.aside nav { display: grid; margin-top: 8px; border-top: 1px solid var(--line); }
+.aside nav a { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-size: 15px; color: var(--text-2); transition: color .2s; }
+.aside nav a span { color: var(--text-3); font: 500 12px/1.9 var(--mono); }
+.aside nav a:hover, .aside nav a.on { color: var(--text); }
+.aside nav a.on span { color: var(--accent); }
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; }
+  .aside { position: static; }
+  .aside nav { display: none; }
+}
+
+/* ---------- Rows ---------- */
+.list { display: grid; }
+.row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); align-items: center;
+  padding: clamp(20px, 2.6vw, 32px) 0; border-top: 1px solid var(--line); text-decoration: none; scroll-margin-top: 96px; }
+.row:first-child { border-top: 0; padding-top: 0; }
+.row:last-child { padding-bottom: 0; }
+.row .media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--bg-3); aspect-ratio: 16 / 10; }
+.row .media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.row:hover .media img { transform: scale(1.03); }
+.row .media.device { background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--accent) 20%, var(--bg-3)) 0%, var(--bg-3) 62%); }
+.row .media.device img { object-fit: contain; padding: 8%; }
+.row .text { display: grid; gap: 12px; align-content: center; }
+.row .top { display: flex; align-items: center; gap: 12px; color: var(--text-3); }
+.row .top b { font-weight: 500; color: var(--text); }
+.row .top i { flex: 1; height: 1px; background: var(--line); }
+.row h3 { font-size: clamp(24px, 2.4vw, 32px); }
+.row p { color: var(--text-2); font-size: 16.5px; }
+.title { background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat; transition: background-size .45s var(--ease); }
+.row:hover .title, .row:focus-visible .title { background-size: 100% 2px; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; margin-top: 4px; }
+.meta dt { color: var(--text-3); }
+.meta dd { margin: 0; color: var(--text-2); }
+.go { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; margin-top: 6px; }
+.go b { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); transition: background-color .3s, border-color .3s, color .3s; }
+.go svg { width: 15px; height: 15px; transition: transform .3s var(--ease); }
+.row:hover .go b { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.row:hover .go svg { transform: translateX(2px); }
+@media (max-width: 640px) {
+  .row { grid-template-columns: 1fr; gap: 16px; padding: 28px 0; }
+}
+
+/* ---------- Personal project ---------- */
+.project { display: grid; gap: 20px; }
+.project .media { position: relative; overflow: hidden; border-radius: var(--radius-lg); border: 1px solid var(--line); aspect-ratio: 16 / 9; background: var(--bg-3); }
+.project .media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.project .media:hover img { transform: scale(1.03); }
+.live { position: absolute; left: 16px; top: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px 7px 10px; border-radius: 999px;
+  background: rgba(11,12,13,.72); color: #ffce3c; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 2.2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,206,60,.6); } 70%, 100% { box-shadow: 0 0 0 8px transparent; } }
+@media (prefers-reduced-motion: reduce) { .live i { animation: none; } }
+.project .info { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px clamp(20px, 3vw, 40px); align-items: start; }
+.project h3 { font-size: clamp(28px, 3vw, 38px); }
+.project .info p { color: var(--text-2); margin-top: 10px; }
+.project .meta { margin-top: 0; }
+.actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 999px; font: 500 15px/1 var(--font);
+  text-decoration: none; border: 1px solid var(--line); color: var(--text); transition: transform .2s, border-color .2s, filter .2s; }
+.btn:hover { border-color: var(--text-3); transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn svg { width: 16px; height: 16px; }
+@media (max-width: 640px) { .project .info { grid-template-columns: 1fr; } .project .media { aspect-ratio: 4 / 3; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+</svg>
+
+<div class="pv"><div class="wrap"><span class="mono">Variation B · Index list</span><button id="theme" type="button">Light theme</button></div></div>
+
+<main>
+  <section class="section" id="work">
+    <div class="wrap split">
+      <div class="aside">
+        <span class="eyebrow">Selected work</span>
+        <h2>Case studies</h2>
+        <p>Two products and the features behind them, from early research to release.</p>
+        <nav aria-label="Case studies">
+          <a href="#cs-1"><span>01</span>AXIS</a>
+          <a href="#cs-2"><span>02</span>Recurring Schedule</a>
+          <a href="#cs-3"><span>03</span>Hero Carousel</a>
+          <a href="#cs-4"><span>04</span>Design System</a>
+        </nav>
+      </div>
+
+      <div class="list">
+        <a class="row" id="cs-1" href="index.html#/work/axis">
+          <div class="media device"><img src="img/AXIS_home.png" alt="AXIS shown on a TV, laptop, tablet and phone"></div>
+          <div class="text">
+            <div class="top mono"><b>01</b><i></i>Product</div>
+            <h3><span class="title">AXIS</span></h3>
+            <p>A user experience management platform designed to empower and manage sport and entertainment services.</p>
+            <dl class="meta"><dt>Years</dt><dd>2017–2023</dd><dt>Platforms</dt><dd>Web, iOS, Android, TV, Xbox, set-top boxes</dd></dl>
+            <span class="go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span>
+          </div>
+        </a>
+        <a class="row" id="cs-2" href="index.html#/work/recurring-schedule">
+          <div class="media device"><img src="img/Mtribes_home.png" alt="MTRIBES on a laptop and phone, showing analytics and user segmentation" loading="lazy"></div>
+          <div class="text">
+            <div class="top mono"><b>02</b><i></i>MTRIBES</div>
+            <h3><span class="title">Recurring Schedule</span></h3>
+            <p>Updating existing functionality to solve client pain points.</p>
+            <dl class="meta"><dt>Years</dt><dd>2022–2023</dd><dt>Covers</dt><dd>Market research, usability testing, collaboration</dd></dl>
+            <span class="go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span>
+          </div>
+        </a>
+        <a class="row" id="cs-3" href="index.html#/work/hero-carousel">
+          <div class="media"><img src="img/Outcomes_Hero.png" alt="The finished AXIS hero carousel" loading="lazy"></div>
+          <div class="text">
+            <div class="top mono"><b>03</b><i></i>AXIS</div>
+            <h3><span class="title">Hero Carousel</span></h3>
+            <p>Creating a hero carousel component for a multi-platform service.</p>
+            <dl class="meta"><dt>Year</dt><dd>2023</dd><dt>Covers</dt><dd>Wireframing, accessibility, visual design</dd></dl>
+            <span class="go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span>
+          </div>
+        </a>
+        <a class="row" id="cs-4" href="index.html#/work/design-system">
+          <div class="media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system" loading="lazy"></div>
+          <div class="text">
+            <div class="top mono"><b>04</b><i></i>AXIS</div>
+            <h3><span class="title">Design System</span></h3>
+            <p>Creating and maintaining a design system for an existing white label product.</p>
+            <dl class="meta"><dt>Years</dt><dd>2022–2023</dd><dt>Tools</dt><dd>Figma, Confluence, Jira</dd></dl>
+            <span class="go"><b><svg><use href="#i-arrow"/></svg></b>Read case study</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="wrap split">
+      <div class="aside">
+        <span class="eyebrow">Outside work</span>
+        <h2>Personal projects</h2>
+        <p>Things I design and build for myself, to scratch an itch or learn something new. Some of them you can try right here.</p>
+      </div>
+
+      <article class="project">
+        <a class="media" href="index.html#/projects/floorplanner" aria-label="Floorplanner project page">
+          <img src="img/Floorplanner_hero.webp" alt="A flat drawn in Floorplanner: the plan with wall lengths and room areas, cut open to show the kitchen and bedroom in 3D" loading="lazy">
+          <span class="live mono"><i></i>Live in the browser</span>
+        </a>
+        <div class="info">
+          <div>
+            <h3>Floorplanner</h3>
+            <p>A sketch-first 3D floor plan editor that runs in the browser. Draw the walls, fit out the rooms, walk around in 3D.</p>
+          </div>
+          <dl class="meta"><dt>Year</dt><dd>2026</dd><dt>Role</dt><dd>Design &amp; build</dd><dt>Built with</dt><dd>TypeScript, React, three.js</dd><dt>Runs on</dt><dd>Desktop, tablet and phone browsers</dd></dl>
+          <div class="actions">
+            <a class="btn primary" href="index.html#/projects/floorplanner">Try it on the page <svg><use href="#i-arrow"/></svg></a>
+            <a class="btn" href="https://mheiland17.github.io/FloorPlanner-app/" target="_blank" rel="noopener">Open in new tab <svg><use href="#i-external"/></svg></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<script>
+  const b = document.getElementById('theme'), root = document.documentElement;
+  b.onclick = () => {
+    const light = root.dataset.theme !== 'light';
+    root.dataset.theme = light ? 'light' : 'dark';
+    b.textContent = light ? 'Dark theme' : 'Light theme';
+  };
+  // Highlight the case study in view in the side index.
+  const links = [...document.querySelectorAll('.aside nav a')];
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) links.forEach((l) => l.classList.toggle('on', l.hash === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('.row').forEach((r) => io.observe(r));
+</script>
+</body>
+</html>

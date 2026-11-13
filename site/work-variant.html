@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work sections — variation</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="img/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300..800;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Same tokens as index.html, so this drops straight in. */
+:root {
+  --bg: #0b0c0d; --bg-2: #121416; --bg-3: #1a1d20; --line: #262a2e;
+  --text: #eceeef; --text-2: #a6acb2; --text-3: #6f767d;
+  --accent: #ffce3c; --accent-ink: #1a1400;
+  --radius: 14px; --radius-lg: 22px; --maxw: 1240px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --font: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+  --ease: cubic-bezier(.2,.7,.2,1);
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  --bg: #f6f5f2; --bg-2: #ecebe6; --bg-3: #e2e0da; --line: #d6d3cc;
+  --text: #121314; --text-2: #4c5157; --text-3: #80868c;
+  --accent: #f5bc1a; --accent-ink: #1a1400;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 17px/1.6 var(--font); letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden; transition: background-color .3s, color .3s; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+.mono { font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.eyebrow { font: 500 12.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); display: inline-flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--accent); border-radius: 2px; }
+
+/* Preview chrome (not part of the design) */
+.pv { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.pv .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 56px; }
+.pv span { color: var(--text-3); }
+.pv button { font: 500 13px var(--font); color: var(--text); background: none; border: 1px solid var(--line); border-radius: 999px; height: 34px; padding: 0 14px; cursor: pointer; }
+.pv button:hover { background: var(--bg-3); }
+
+/* ---------- Section head ---------- */
+.section { padding: clamp(72px, 9vw, 120px) 0; }
+.section + .section { padding-top: 0; }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 16px 48px; align-items: end;
+  padding-bottom: 28px; margin-bottom: clamp(28px, 4vw, 44px); border-bottom: 1px solid var(--line); }
+.head h2 { font-size: clamp(34px, 5vw, 56px); margin-top: 14px; }
+.head h2 sup { font: 500 13px var(--mono); letter-spacing: .04em; color: var(--text-3); vertical-align: top; margin-left: 8px; position: relative; top: .5em; }
+.head p { color: var(--text-2); }
+@media (max-width: 760px) { .head { grid-template-columns: 1fr; } }
+
+/* ---------- Shared card bits ---------- */
+.card { position: relative; text-decoration: none; display: flex; flex-direction: column; }
+.card .media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--bg-3); isolation: isolate; }
+.card .media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.card:hover .media img { transform: scale(1.03); }
+.card .media.device { background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--accent) 20%, var(--bg-3)) 0%, var(--bg-3) 62%); }
+.card .media.device img { object-fit: contain; object-position: center; padding: 8%; }
+.kicker { display: flex; align-items: center; gap: 10px; color: var(--text-3); }
+.kicker .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
+.title { display: inline; background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 2px no-repeat; transition: background-size .45s var(--ease); }
+.card:hover .title, .card:focus-visible .title { background-size: 100% 2px; }
+.cta { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; color: var(--text); }
+.cta svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+.card:hover .cta svg { transform: translateX(4px); }
+.topics { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.topics li { font-size: 13px; line-height: 1; padding: 7px 10px; border-radius: 999px; background: var(--bg-3); color: var(--text-2); }
+
+/* ---------- Featured case study ---------- */
+.feature { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center;
+  padding: clamp(12px, 1.4vw, 16px); padding-right: clamp(20px, 4vw, 56px); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--bg-2); margin-bottom: clamp(20px, 2.4vw, 28px); transition: border-color .3s; }
+.feature:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.feature .media { aspect-ratio: 16 / 11; }
+.feature .body { display: grid; gap: 18px; padding: 12px 0; }
+.feature h3 { font-size: clamp(34px, 4.2vw, 52px); }
+.feature p { color: var(--text-2); font-size: 18px; }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin: 4px 0; padding: 16px 0; border-block: 1px solid var(--line); font-size: 15px; }
+.facts dt { color: var(--text-3); padding-top: 2px; }
+.facts dd { margin: 0; }
+
+/* ---------- Case study grid ---------- */
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 2.4vw, 28px); }
+.grid3 .card { gap: 16px; }
+.grid3 .media { aspect-ratio: 4 / 3; }
+.grid3 h3 { font-size: clamp(21px, 1.9vw, 25px); }
+.grid3 p { color: var(--text-2); font-size: 16px; }
+.grid3 .top { display: flex; justify-content: space-between; align-items: center; }
+.grid3 .num { color: var(--text-3); }
+.grid3 .text { display: grid; gap: 10px; }
+.grid3 .topics { margin-top: 4px; }
+@media (max-width: 960px) {
+  .feature { grid-template-columns: 1fr; padding: 12px 12px 24px; }
+  .feature .body { padding: 4px 8px 0; }
+  .grid3 { grid-template-columns: 1fr 1fr; }
+  .grid3 .card:first-child { grid-column: 1 / -1; }
+  .grid3 .card:first-child .media { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 600px) {
+  .grid3 { grid-template-columns: 1fr; gap: 40px; }
+  .grid3 .card:first-child .media { aspect-ratio: 4 / 3; }
+}
+
+/* ---------- Personal project ---------- */
+.project { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--bg-2); overflow: hidden; }
+.project .body { display: grid; align-content: center; gap: 20px; padding: clamp(24px, 4vw, 52px); }
+.live { justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+:root[data-theme='light'] .live { color: #8a6500; }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 0 currentColor; animation: pulse 2.2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } 70%, 100% { box-shadow: 0 0 0 8px transparent; } }
+@media (prefers-reduced-motion: reduce) { .live i { animation: none; } }
+.project h3 { font-size: clamp(30px, 3.6vw, 44px); }
+.project p { color: var(--text-2); font-size: 17px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; counter-reset: s; }
+.steps li { counter-increment: s; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); font-size: 14.5px; line-height: 1.3; }
+.steps li::before { content: '0' counter(s); display: block; font: 500 11px var(--mono); letter-spacing: .06em; color: var(--text-3); margin-bottom: 6px; }
+.stack { color: var(--text-3); font-size: 14.5px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 999px; font: 500 15px/1 var(--font);
+  text-decoration: none; border: 1px solid var(--line); color: var(--text); transition: transform .2s, border-color .2s, filter .2s; }
+.btn:hover { border-color: var(--text-3); transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn svg { width: 16px; height: 16px; }
+.project .shot { position: relative; min-height: 100%; overflow: hidden; }
+.project .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.project .shot:hover img { transform: scale(1.03); }
+@media (max-width: 960px) {
+  .project { grid-template-columns: 1fr; }
+  .project .shot { order: -1; aspect-ratio: 16 / 10; min-height: 0; }
+}
+@media (max-width: 480px) { .steps { grid-template-columns: 1fr; } .steps li { display: flex; gap: 10px; align-items: baseline; } .steps li::before { margin: 0; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+</svg>
+
+<div class="pv"><div class="wrap"><span class="mono">Variation · Case studies + personal projects</span><button id="theme" type="button">Light theme</button></div></div>
+
+<main>
+  <section class="section" id="work">
+    <div class="wrap">
+      <div class="head">
+        <div><span class="eyebrow">Selected work</span><h2>Case studies<sup>04</sup></h2></div>
+        <p>Two products and the features behind them, from early research to release.</p>
+      </div>
+
+      <a class="card feature" href="index.html#/work/axis">
+        <div class="media device"><img src="img/AXIS_home.png" alt="AXIS shown on a TV, laptop, tablet and phone"></div>
+        <div class="body">
+          <span class="kicker mono">01 <i class="dot"></i> Product <i class="dot"></i> 2017–2023</span>
+          <h3><span class="title">AXIS</span></h3>
+          <p>A user experience management platform designed to empower and manage sport and entertainment services.</p>
+          <dl class="facts">
+            <dt>Platforms</dt><dd>Web, iOS, Android, TV, Xbox, set-top boxes</dd>
+            <dt>Covers</dt><dd>End to end feature design, cross-platform design, international teams</dd>
+          </dl>
+          <span class="cta">Read case study <svg><use href="#i-arrow"/></svg></span>
+        </div>
+      </a>
+
+      <div class="grid3">
+        <a class="card" href="index.html#/work/recurring-schedule">
+          <div class="media device"><img src="img/Mtribes_home.png" alt="MTRIBES on a laptop and phone, showing analytics and user segmentation" loading="lazy"></div>
+          <div class="text">
+            <div class="top"><span class="kicker mono">MTRIBES <i class="dot"></i> 2022–23</span><span class="num mono">02</span></div>
+            <h3><span class="title">Recurring Schedule</span></h3>
+            <p>Updating existing functionality to solve client pain points.</p>
+            <ul class="topics"><li>Market research</li><li>Usability testing</li><li>Collaboration</li></ul>
+          </div>
+        </a>
+        <a class="card" href="index.html#/work/hero-carousel">
+          <div class="media"><img src="img/Outcomes_Hero.png" alt="The finished AXIS hero carousel" loading="lazy"></div>
+          <div class="text">
+            <div class="top"><span class="kicker mono">AXIS <i class="dot"></i> 2023</span><span class="num mono">03</span></div>
+            <h3><span class="title">Hero Carousel</span></h3>
+            <p>Creating a hero carousel component for a multi-platform service.</p>
+            <ul class="topics"><li>Wireframing</li><li>Accessibility</li><li>Visual design</li></ul>
+          </div>
+        </a>
+        <a class="card" href="index.html#/work/design-system">
+          <div class="media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system" loading="lazy"></div>
+          <div class="text">
+            <div class="top"><span class="kicker mono">AXIS <i class="dot"></i> 2022–23</span><span class="num mono">04</span></div>
+            <h3><span class="title">Design System</span></h3>
+            <p>Creating and maintaining a design system for an existing white label product.</p>
+            <ul class="topics"><li>Documentation</li><li>Figma</li><li>Early access</li></ul>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="wrap">
+      <div class="head">
+        <div><span class="eyebrow">Outside work</span><h2>Personal projects</h2></div>
+        <p>Things I design and build for myself, to scratch an itch or learn something new. Some of them you can try right here.</p>
+      </div>
+
+      <article class="project">
+        <div class="body">
+          <span class="live mono"><i></i>Live in the browser</span>
+          <h3>Floorplanner</h3>
+          <p>A sketch-first 3D floor plan editor that runs in the browser.</p>
+          <ol class="steps"><li>Draw the walls</li><li>Fit out the rooms</li><li>Walk around in 3D</li></ol>
+          <p class="stack">2026 · Design &amp; build · TypeScript, React, three.js</p>
+          <div class="actions">
+            <a class="btn primary" href="index.html#/projects/floorplanner">Try it on the page <svg><use href="#i-arrow"/></svg></a>
+            <a class="btn" href="https://mheiland17.github.io/FloorPlanner-app/" target="_blank" rel="noopener">Open in new tab <svg><use href="#i-external"/></svg></a>
+          </div>
+        </div>
+        <a class="shot" href="index.html#/projects/floorplanner" tabindex="-1" aria-hidden="true">
+          <img src="img/Floorplanner_hero.webp" alt="" loading="lazy">
+        </a>
+      </article>
+    </div>
+  </section>
+</main>
+
+<script>
+  const b = document.getElementById('theme'), root = document.documentElement;
+  b.onclick = () => {
+    const light = root.dataset.theme !== 'light';
+    root.dataset.theme = light ? 'light' : 'dark';
+    b.textContent = light ? 'Dark theme' : 'Light theme';
+  };
+</script>
+</body>
+</html>
