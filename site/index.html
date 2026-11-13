@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Marek Heiland — Product Designer &amp; Illustrator</title>
-<meta name="description" content="Marek Heiland is a product designer and illustrator in Sydney. Case studies from AXIS and MTRIBES, and digital illustrations.">
+<meta name="description" content="Marek Heiland is a product designer and illustrator in Sydney. Case studies from AXIS and MTRIBES, personal projects, and digital illustrations.">
 <link rel="icon" type="image/png" href="img/Favicon.png">
 <link rel="apple-touch-icon" href="img/Webclip.png">
 <meta name="theme-color" content="#0b0c0d">
@@ -334,6 +334,36 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .next a:hover .go { background: var(--accent); color: var(--accent-ink); transform: translateX(6px); border-color: transparent; }
 .next .go svg { width: 24px; height: 24px; }
 
+/* ---------- Personal projects ---------- */
+#projects { padding-top: 0; }
+
+/* The live app, embedded. The poster keeps the page light and the scroll free until
+   the visitor asks for the app; then the iframe loads in its place. */
+.app-embed { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); box-shadow: var(--shadow);
+  aspect-ratio: 16 / 10; border: 1px solid var(--line); }
+.app-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #0b0c0d; }
+.app-embed:fullscreen { border-radius: 0; border: 0; aspect-ratio: auto; }
+.app-poster { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; overflow: hidden;
+  background: radial-gradient(90% 80% at 50% 100%, color-mix(in srgb, var(--accent) 14%, var(--bg-3)) 0%, var(--bg-3) 70%); }
+.app-poster > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* The screenshot is dark in either theme, so its scrim and text are fixed dark and light. */
+.app-poster::after { content: ''; position: absolute; inset: 0; background: radial-gradient(closest-side, rgba(11,12,13,.82), rgba(11,12,13,.35)); }
+.app-poster .launch { position: relative; z-index: 1; display: grid; justify-items: center; gap: 14px; padding: 24px; }
+.app-poster .launch .btn { height: 54px; padding: 0 26px; font-size: 16px; box-shadow: 0 18px 40px -16px rgba(0,0,0,.6); cursor: pointer; }
+.app-poster .launch p { color: rgba(255,255,255,.78); font-size: 14.5px; max-width: 34ch; }
+.app-embed.live .app-poster { display: none; }
+.app-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; margin-top: 14px; }
+.app-bar p { color: var(--text-3); font-size: 14px; }
+.app-bar .btn-row { gap: 8px; }
+.app-bar .btn { height: 38px; padding: 0 14px; font-size: 14px; cursor: pointer; }
+.app-bar .btn svg { width: 15px; height: 15px; }
+@media (max-width: 760px) {
+  .app-embed { aspect-ratio: auto; height: min(78svh, 640px); }
+  .app-poster { align-items: end; }
+  .app-poster::after { background: linear-gradient(180deg, rgba(11,12,13,.1) 35%, rgba(11,12,13,.9) 80%); }
+  .app-embed:fullscreen { height: 100%; }
+}
+
 /* ---------- Illustrations ---------- */
 .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 18px); }
 .gallery a { display: block; border-radius: var(--radius); overflow: hidden; background: var(--bg-3); position: relative; }
@@ -569,6 +599,9 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
 </svg>
 
 <header class="site-header" id="header">
@@ -640,6 +673,21 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
         <a class="work-card wide reveal" href="#/work/design-system">
           <div class="media"><img src="img/Design_System_header.jpg" alt="Components from the AXIS design system"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
           <div class="meta"><div><h3>AXIS: Design System</h3><p>Creating and maintaining a design system for an existing white label product.</p></div><span class="tag mono">2022–2023</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div><span class="eyebrow">Outside work</span><h2>Personal projects</h2></div>
+        <p>Things I design and build for myself, to scratch an itch or learn something new. Some of them you can try right here.</p>
+      </div>
+      <div class="work-grid">
+        <a class="work-card wide reveal" href="#/projects/floorplanner">
+          <div class="media"><img src="img/Floorplanner_hero.webp" alt="A flat drawn in Floorplanner: the plan with wall lengths and room areas, cut open to show the kitchen and bedroom in 3D" loading="lazy"><span class="go"><svg><use href="#i-arrow"/></svg></span></div>
+          <div class="meta"><div><h3>Floorplanner</h3><p>A sketch-first 3D floor plan editor that runs in the browser. Draw the walls, fit out the rooms, walk around in 3D. Try it on the page.</p></div><span class="tag mono">2026</span></div>
         </a>
       </div>
     </div>
@@ -1287,6 +1335,88 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   <div class="next"><div class="wrap"><a href="#/work/axis"><div><span class="eyebrow">Next</span><h2>AXIS</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
 </article>
 
+<!-- =================================================================== PROJECTS: FLOORPLANNER -->
+<article data-route="projects/floorplanner" data-title="Floorplanner — Marek Heiland">
+  <header class="wrap case-hero">
+    <span class="eyebrow">Personal project</span>
+    <h1>Floorplanner</h1>
+    <p class="lede">A sketch-first 3D floor plan editor that runs in the browser. You draw walls the way you would in Fusion 360's sketch mode, by clicking corners or typing exact lengths and angles, then furnish the rooms and look around them in 3D.</p>
+    <dl class="facts">
+      <div><dt>Year</dt><dd>2026</dd></div>
+      <div><dt>Role</dt><dd>Design &amp; build</dd></div>
+      <div><dt>Built with</dt><dd>TypeScript, React, three.js</dd></div>
+      <div><dt>Runs on</dt><dd>Desktop, tablet and phone browsers</dd></div>
+    </dl>
+  </header>
+  <div class="wrap">
+    <div class="app-embed reveal" id="fpEmbed" data-src="https://mheiland17.github.io/FloorPlanner-app/">
+      <div class="app-poster">
+        <img src="img/Floorplanner_hero.webp" alt="">
+        <div class="launch">
+          <button class="btn primary" type="button" data-fp="launch"><svg><use href="#i-play"/></svg>Try the floor planner</button>
+          <p>The full app, running live on this page.</p>
+        </div>
+      </div>
+    </div>
+    <div class="app-bar">
+      <p>Runs in your browser. Your plan is saved there too; nothing is uploaded.</p>
+      <div class="btn-row">
+        <button class="btn" type="button" data-fp="full"><svg><use href="#i-expand"/></svg>Full screen</button>
+        <a class="btn" href="https://mheiland17.github.io/FloorPlanner-app/" target="_blank" rel="noopener"><svg><use href="#i-external"/></svg>Open in a new tab</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap case-body">
+    <nav class="toc" aria-label="On this page"></nav>
+    <div class="prose">
+      <section id="fp-why" data-toc="Why I built it">
+        <span class="eyebrow">Why I built it</span>
+        <h2>Between a toy and CAD</h2>
+        <p>I wanted to map out a home properly: where the walls really are, whether the sofa fits, how a second furniture arrangement would feel. The room planners I tried were quick but loose with measurements, and CAD packages were precise but slow to set up for something this personal.</p>
+        <p>So I designed the tool I wanted. Precise like a CAD sketch, where every wall can be typed to the centimetre, but quick enough to try an idea in a few minutes, and visual enough to show someone else.</p>
+      </section>
+
+      <section id="fp-modes" data-toc="How it works">
+        <span class="eyebrow">How it works</span>
+        <h2>Three modes, one plan</h2>
+        <p>The 3D view fills the screen and everything else floats over it. The work moves through three modes, each with its own colour so it's always clear where you are.</p>
+        <div class="cards">
+          <div class="card"><span class="num">01 · Sketch</span><h3>Draw the walls</h3><p>Click corners or type lengths and angles. Snapping to corners, midpoints and 45° guides. Doors, windows, power points and skirting go on the walls, and closed areas become rooms with their areas.</p></div>
+          <div class="card"><span class="num">02 · Fit-Out</span><h3>Furnish the rooms</h3><p>A catalogue of furniture, kitchens and wardrobes built piece by piece, paint and flooring, plants and art. Items slide along walls and push up against each other like the real thing.</p></div>
+          <div class="card"><span class="num">03 · Preview</span><h3>Look around</h3><p>Just the plan in 3D, lit by a sun you can move. Walls cut away as you orbit so you can see inside, or slice the whole building at a height.</p></div>
+        </div>
+      </section>
+
+      <section id="fp-depth" data-toc="Going further">
+        <span class="eyebrow">Going further</span>
+        <h2>From a room to a whole house</h2>
+        <ul>
+          <li><strong>Floors and stairs.</strong> Basements, half floors and landings, with straight, L, U and spiral staircases that cut their own hole in the floor above.</li>
+          <li><strong>Layouts.</strong> Keep several arrangements of the same rooms side by side and switch between them.</li>
+          <li><strong>The Workshop.</strong> Sketch a piece of furniture of your own, then place it like anything in the catalogue.</li>
+          <li><strong>Share links.</strong> The whole plan is compressed into the link itself, so it can be sent without an account or a server.</li>
+          <li><strong>Blender export.</strong> One click gives a <code>.glb</code> with everything named, grouped and in metres, ready to render.</li>
+        </ul>
+      </section>
+
+      <section id="fp-design" data-toc="Design approach">
+        <span class="eyebrow">Design approach</span>
+        <h2>Conventions before features</h2>
+        <p>With this many tools, the risk is that each one behaves a little differently. Early on I wrote down the interaction rules: how the pointer, keys, snapping, dimensions and selection work. Every new feature had to behave like its nearest existing neighbour, and whenever I corrected something in testing, the correction went into those rules too.</p>
+        <p>The same thinking went into touch. On tablets and phones the tools rearrange, gestures replace the mouse, and a short tour on first launch explains how to move around.</p>
+      </section>
+
+      <section id="fp-build" data-toc="Building it">
+        <span class="eyebrow">Building it</span>
+        <h2>Designing in the real material</h2>
+        <p>I designed Floorplanner then built it with Claude Code. I established the direction, the interaction design and the details; Claude wrote most of the code, and I tested every change in the browser and sent back what felt wrong. It let me work like a designer with a developer at my side, in the real product instead of a prototype.</p>
+        <div class="callout"><span class="eyebrow">In numbers</span><p>About a month from first wall to stairs, 120+ iterations, and a suite of automated tests guarding the geometry: walls, rooms, snapping and the file format.</p></div>
+      </section>
+    </div>
+  </div>
+  <div class="next"><div class="wrap"><a href="#/work/axis"><div><span class="eyebrow">Back to the case studies</span><h2>AXIS</h2></div><span class="go"><svg><use href="#i-arrow"/></svg></span></a></div></div>
+</article>
+
 <!-- =================================================================== ILLUSTRATIONS -->
 <div data-route="illustrations" data-title="Illustrations — Marek Heiland">
   <header class="wrap case-hero">
@@ -1436,7 +1566,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     });
   });
   const UNIT_SEL = '.reveal, .gx-run, .prose .figs, .prose .cards, .prose .logos, .prose .work-grid, .gallery a';
-  const MEDIA = 'img, .media, .exp-media, .ico, .logos > div, .strip > a';
+  const MEDIA = 'img, .media, .app-embed, .exp-media, .ico, .logos > div, .strip > a';
   const HEAD = '.eyebrow, h1, h2, h3, .num, .tag, dt';
   const PART = `${MEDIA}, ${HEAD}, dd, p, li, .quote, .callout, figcaption, .btn, .arrow-link, .tools span`;
   const kindOf = (p) => p.matches(MEDIA) ? 0 : p.matches(HEAD) ? 1 : 2; // image, heading, body
@@ -1519,7 +1649,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     if (location.hash && !location.hash.startsWith('#/')) return;
     const hash = location.hash.replace(/^#\/?/, '');
     // In-page anchors on home (#/work, #/about, #/contact) and plain #ids used by the skip link.
-    const anchors = { work: 'work', about: 'about', contact: 'contact' };
+    const anchors = { work: 'work', projects: 'projects', about: 'about', contact: 'contact' };
     let name = hash, anchor = null;
     if (!hash || anchors[hash] || !routes.some((r) => r.dataset.route === hash)) {
       if (anchors[hash]) anchor = anchors[hash];
@@ -1529,7 +1659,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     const page = routes.find((r) => r.dataset.route === name);
     document.title = page.dataset.title.replace('&amp;', '&');
     document.body.classList.toggle('on-hero', name === 'home');
-    const navKey = name.startsWith('work') ? 'work' : name === 'home' ? (anchor || 'home') : name;
+    const navKey = /^(work|projects)/.test(name) ? 'work' : name === 'home' ? (anchor === 'projects' ? 'work' : anchor || 'home') : name;
     $$('.nav a').forEach((a) => a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
     closeMenu();
     if (name !== 'home' && introRunning) cancelIntro();
@@ -1559,6 +1689,28 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   function hero(on) { if (on) restart(); else clearInterval(timer); }
   document.addEventListener('visibilitychange', () => hero(!document.hidden && $('[data-route="home"]').classList.contains('active')));
   show(0);
+
+  /* ---- Embedded apps (personal projects): the iframe loads only when asked for ---- */
+  $$('.app-embed').forEach((box) => {
+    const bar = box.nextElementSibling;
+    function launch() {
+      if (box.classList.contains('live')) return;
+      const f = document.createElement('iframe');
+      f.src = box.dataset.src;
+      f.title = 'Floorplanner, running live';
+      f.allow = 'fullscreen; clipboard-write';
+      box.append(f);
+      box.classList.add('live');
+      f.addEventListener('load', () => { try { f.focus(); } catch (e) {} }, { once: true });
+    }
+    $('[data-fp="launch"]', box).addEventListener('click', launch);
+    // Full screen where the browser allows it on an element (not iPhone Safari): a new tab there.
+    $('[data-fp="full"]', bar).addEventListener('click', () => {
+      if (!box.requestFullscreen) { window.open(box.dataset.src, '_blank', 'noopener'); return; }
+      launch();
+      box.requestFullscreen().catch(() => window.open(box.dataset.src, '_blank', 'noopener'));
+    });
+  });
 
   /* ---- Lightbox: any [data-zoom] image, or links inside a .gallery ---- */
   const lb = $('#lightbox'), lbImg = $('img', lb), lbCount = $('.lb-count', lb);
