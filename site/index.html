@@ -14,17 +14,27 @@
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
 <script>
-  // The chosen variations: landing B ("boot sequence") and scroll C ("clean scan").
+  // The chosen variations: landing B ("boot sequence"), scroll D ("no frames") and typed
+  // text B (headings type out, body copy glitches in).
   // Set before first paint, so the landing can hide the hero without a flash of the
-  // finished page. The A/B lab is hidden, so saved choices from it are no longer read.
+  // finished page.
+  // The A/B lab only appears when the site runs locally (localhost, a file, or a home-network
+  // address for phone testing); there, choices saved from it override the defaults. On the live
+  // site the lab stays hidden and every visitor gets the defaults.
   (function () {
-    var v = { landing: 'B', scroll: 'C' };
+    var host = location.hostname;
+    var lab = location.protocol === 'file:' || host === 'localhost' || host === '[::1]' || /\.localhost$/.test(host)
+      || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+    window.__lab = lab;
+    var v = { landing: 'B', scroll: 'D', text: 'B' };
+    if (lab) try { var saved = JSON.parse(localStorage.getItem('mh-variants') || '{}'); for (var k in saved) v[k] = saved[k]; } catch (e) {}
     window.__variants = v;
     var home = !location.hash || location.hash === '#/' || location.hash === '#';
     var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (v.landing === 'B' && home && !still) document.documentElement.classList.add('intro-b');
     if (v.scroll === 'B' && !still) document.documentElement.classList.add('gl-b');
-    if (v.scroll === 'C' && !still) document.documentElement.classList.add('gl-c');
+    if ((v.scroll === 'C' || v.scroll === 'D') && !still) document.documentElement.classList.add('gl-c');
+    if (v.scroll === 'D' && !still) document.documentElement.classList.add('gl-bare');
   })();
 </script>
 <style>
@@ -44,6 +54,7 @@
   --radius: 14px;
   --radius-lg: 22px;
   --k: 1;                     /* animation time scale, set by the A/B panel's speed field */
+  --kl: 1.3333;               /* the landing's time scale: --k at 0.75× speed */
   --maxw: 1240px;
   --prose: 680px;
   --gutter: clamp(16px, 4vw, 48px);
@@ -167,6 +178,8 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .hero-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06);
   transition: opacity 1.6s ease, transform 9s linear; }
 .hero-slides img.on { opacity: 1; transform: scale(1); }
+/* The boot's quick flick through every slide: hard cuts, no cross-fade. */
+.hero-slides.flick img { transition: none; }
 .hero::after { content: ''; position: absolute; inset: 0;
   background:
     linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 70%),
@@ -228,15 +241,212 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .work-card .go svg { width: 20px; height: 20px; }
 @media (max-width: 760px) { .work-card, .work-card.wide { grid-column: span 12; } .work-card.wide .media { aspect-ratio: 16 / 10; } }
 
-/* Experience rows */
-.exp { display: grid; gap: clamp(56px, 8vw, 110px); }
-.exp-row { display: grid; grid-template-columns: 1fr 1.25fr; gap: clamp(28px, 5vw, 80px); align-items: center; }
-.exp-row:nth-child(even) .exp-media { order: -1; }
-.exp-row h3 { font-size: clamp(24px, 2.8vw, 36px); margin: 14px 0 16px; }
-.exp-row p { color: var(--text-2); }
-.exp-media { border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-3); }
-.exp-media img { width: 100%; }
-@media (max-width: 860px) { .exp-row { grid-template-columns: 1fr; } .exp-row:nth-child(even) .exp-media { order: 0; } }
+/* ---------- How I work: infographic ----------
+   Stat counters, then six practices as tabs. Each panel pairs a small live diagram (.hw-viz)
+   with the original copy and a thumbnail of the original artefact (opens in the lightbox). */
+.hw-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: clamp(32px, 5vw, 56px); }
+.hw-stat { display: flex; align-items: center; gap: 18px; padding: 26px clamp(12px, 2.4vw, 32px); }
+.hw-stat + .hw-stat { border-left: 1px solid var(--line); }
+.hw-stat strong { font-size: clamp(48px, 6vw, 76px); line-height: 1; font-weight: 600; letter-spacing: -0.04em; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 1ch; }
+.hw-stat span { color: var(--text-2); font-size: 15px; line-height: 1.4; max-width: 22ch; }
+
+.hw { display: grid; grid-template-columns: minmax(230px, 300px) 1fr; gap: clamp(20px, 3vw, 40px); align-items: start; }
+.hw-tabs { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 92px; }
+.hw-tab { position: relative; display: flex; align-items: baseline; gap: 14px; width: 100%; text-align: left; padding: 16px 18px; border-radius: var(--radius);
+  border: 1px solid transparent; background: transparent; color: var(--text-2); font: 500 16px/1.3 var(--font); cursor: pointer; overflow: hidden;
+  transition: background-color .25s, border-color .25s, color .25s; }
+.hw-tab:hover { color: var(--text); background: color-mix(in srgb, var(--bg) 50%, transparent); }
+.hw-tab[aria-selected='true'] { color: var(--text); background: var(--bg); border-color: var(--line); }
+.hw-n { font: 500 12.5px var(--mono); color: var(--text-3); transition: color .25s; }
+.hw-tab[aria-selected='true'] .hw-n { color: var(--accent); }
+.hw-bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--accent); transform-origin: left; transform: scaleX(var(--p, 0)); opacity: 0; }
+.hw-tab[aria-selected='true'] .hw-bar { opacity: 1; }
+
+.hw-stage { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(16px, 2.6vw, 32px); min-width: 0; }
+.hw-panel { display: grid; gap: clamp(20px, 3vw, 32px); outline-offset: 6px; }
+.hw-panel[hidden] { display: none; }
+.hw-panel:not([hidden]) { animation: hw-in calc(.5s * var(--k)) cubic-bezier(.2,.7,.2,1) both; }
+@keyframes hw-in { from { opacity: 0; transform: translateY(10px); } }
+.hw-viz { position: relative; background: var(--bg-2); border-radius: var(--radius); padding: clamp(16px, 2.4vw, 28px); min-height: 330px;
+  display: flex; flex-direction: column; justify-content: center; gap: 16px; overflow: hidden; }
+.hw-viz svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hw-copy { display: grid; grid-template-columns: 1fr 180px; grid-template-rows: auto 1fr; column-gap: clamp(16px, 3vw, 32px); align-items: start; }
+.hw-copy h3 { font-size: clamp(24px, 2.6vw, 32px); margin-bottom: 12px; grid-column: 1; }
+.hw-copy p { color: var(--text-2); grid-column: 1; }
+.hw-orig { margin: 0; grid-column: 2; grid-row: 1 / span 2; }
+.hw-orig img { border-radius: 10px; border: 1px solid var(--line); aspect-ratio: 4 / 3; object-fit: cover; width: 100%; transition: transform .3s, border-color .3s; }
+.hw-orig img:hover { transform: scale(1.03); border-color: var(--accent); }
+.hw-orig figcaption { margin-top: 8px; font: 500 11px/1.4 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
+.hw-note { min-height: 1.5em; color: var(--text-2); font-size: 15px; text-align: center; }
+.hw-note.mono { font-size: 12px; }
+.hw-note b { color: var(--text); font-weight: 600; }
+
+.hw-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.hw-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--text-2); font: 500 13px var(--font); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s; }
+.hw-chip:hover { color: var(--text); border-color: var(--text-3); }
+.hw-chip[aria-pressed='true'] { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+.hw-chip i { font-size: 15px; }
+
+/* 01 Double Diamond */
+.dd-route { fill: none; stroke: var(--text-3); stroke-width: 2; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: hw-draw calc(1.6s * var(--k)) cubic-bezier(.4,0,.2,1) .1s forwards; }
+@keyframes hw-draw { to { stroke-dashoffset: 0; } }
+.dd-ph { fill: transparent; cursor: pointer; transition: fill .35s; }
+.dd-ph:hover { fill: color-mix(in srgb, var(--accent) 8%, transparent); }
+.dd-ph.on { fill: color-mix(in srgb, var(--accent) 20%, transparent); }
+.dd-split { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.dd-labels text { fill: var(--text-3); font: 600 17px var(--font); text-anchor: middle; pointer-events: none; transition: fill .35s; }
+.dd-labels text.on { fill: var(--text); }
+.dd-cap { fill: var(--text-3); font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; text-anchor: middle; }
+.dd-dot { fill: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+
+/* 02 Collaboration network */
+.net-links path { stroke: var(--line); stroke-width: 2; fill: none; stroke-dasharray: 3 7; animation: hw-flow 1.2s linear infinite; }
+.net-links path.on { stroke: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+@keyframes hw-flow { to { stroke-dashoffset: -20; } }
+.net-pulses circle { fill: var(--text-3); }
+.net-pulses circle.on { fill: var(--accent); }
+.net-node circle { fill: var(--bg-3); stroke: var(--line); stroke-width: 2; transition: stroke .3s, fill .3s, transform .3s; transform-box: fill-box; transform-origin: center; }
+.net-node text { fill: var(--text-2); font: 600 16px var(--font); text-anchor: middle; pointer-events: none; transition: fill .3s; }
+.net-node[data-n] { cursor: pointer; outline: none; }
+.net-node[data-n]:hover circle, .net-node[data-n]:focus-visible circle, .net-node.on circle { stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 14%, var(--bg-3)); transform: scale(1.08); }
+.net-node.on text, .net-node[data-n]:hover text { fill: var(--text); }
+.net-node.core circle { fill: var(--accent); stroke: none; animation: hw-breathe 2.4s ease-in-out infinite; }
+.net-node.core text { fill: var(--accent-ink); font-size: 18px; }
+@keyframes hw-breathe { 50% { transform: scale(1.06); } }
+
+/* 03 Multi-platform */
+.mp-devices { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.mp-room { height: 230px; display: grid; place-items: center; }
+.mp-screen { position: relative; width: 340px; height: 191px; border: 3px solid color-mix(in srgb, var(--text) 22%, transparent); border-radius: 8px; background: #0e1012;
+  display: flex; flex-direction: column; transition: width .6s cubic-bezier(.5,0,.2,1), height .6s cubic-bezier(.5,0,.2,1), border-radius .6s, border-width .6s; }
+.mp-screen::after { content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); transition: all .4s; }
+.mp-screen[data-k='tv']::after { width: 30%; height: 10px; border-radius: 0 0 6px 6px; background: color-mix(in srgb, var(--text) 18%, transparent); }
+.mp-screen[data-k='stb']::after { width: 26%; height: 12px; margin-top: 8px; border-radius: 3px; background: color-mix(in srgb, var(--text) 30%, transparent); box-shadow: inset -8px 0 0 -6px var(--accent); }
+.mp-screen[data-k='console']::after { width: 16%; height: 16px; margin-top: 8px; border-radius: 9px; background: color-mix(in srgb, var(--text) 30%, transparent); }
+.mp-screen[data-k='mobile'] { border-width: 5px; border-radius: 22px; }
+.mp-screen[data-k='tablet'] { border-width: 7px; border-radius: 16px; }
+.mp-chrome { display: none; gap: 4px; padding: 6px 8px; background: #1d2024; border-radius: 4px 4px 0 0; }
+.mp-chrome i { width: 6px; height: 6px; border-radius: 50%; background: #444a50; }
+.mp-screen[data-k='browser'] .mp-chrome { display: flex; }
+.mp-ui { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6%; padding: 5% 5% 0; }
+.mp-nav { display: flex; align-items: center; gap: 6px; height: 7px; flex: none; }
+.mp-nav b { width: 16px; height: 7px; border-radius: 2px; background: var(--accent); }
+.mp-nav span { width: 22px; height: 4px; border-radius: 2px; background: #3a4046; }
+.mp-hero { flex: none; height: 38%; border-radius: 4px; background: linear-gradient(110deg, #2b3138, #1c2025 60%); display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 5%; }
+.mp-hero span { height: 5px; width: 40%; border-radius: 2px; background: #59616a; }
+.mp-hero span + span { width: 18%; background: var(--accent); }
+.mp-rail { display: grid; grid-template-columns: repeat(var(--cols, 5), 1fr); gap: 5px; align-content: start; }
+.mp-rail i { aspect-ratio: 16 / 10; border-radius: 3px; background: #2a2f35; transition: transform .25s, box-shadow .25s; }
+.mp-rail i.f { transform: scale(1.1); box-shadow: 0 0 0 2px var(--accent); position: relative; z-index: 1; }
+.mp-screen[data-k='mobile'] .mp-rail i, .mp-screen[data-k='tablet'] .mp-rail i { aspect-ratio: 2 / 3; }
+
+/* 04 Design system */
+.hw-ds { --brand: #ffce3c; gap: 26px; }
+.ds-levels { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; counter-reset: ds; }
+.ds-levels li { display: grid; gap: 10px; justify-items: center; position: relative; }
+.ds-levels li + li::before { content: ''; position: absolute; top: 50px; left: -12px; width: 12px; height: 2px; background: var(--line); }
+.ds-levels span { font: 500 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.ds-box { width: 100%; height: 100px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); display: grid; place-items: center; padding: 10px; position: relative; }
+.ds-box.ping { animation: ds-ping calc(.7s * var(--k)) ease-out; }
+@keyframes ds-ping { 0% { box-shadow: 0 0 0 0 var(--brand); } 100% { box-shadow: 0 0 0 10px transparent; } }
+.hw-ds .ds-box * { transition: background-color .5s, color .5s, border-color .5s; }
+.ds-atoms { display: flex; align-items: center; gap: 8px; }
+.ds-atoms .sw { width: 18px; height: 18px; border-radius: 50%; background: var(--brand); }
+.ds-atoms b { font-size: 18px; color: var(--text); }
+.ds-atoms i.ph-fill { font-size: 22px; color: var(--brand); }
+.ds-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; background: var(--brand); color: #1a1400; font-size: 12px; font-weight: 600; }
+.ds-btn.sm { padding: 3px 7px; font-size: 10px; }
+.ds-field { width: 80%; height: 14px; margin-top: 8px; border-bottom: 2px solid var(--brand); background: var(--bg-3); border-radius: 3px 3px 0 0; }
+.ds-box:has(.ds-field) { align-content: center; gap: 0; }
+.ds-card { width: 74%; display: grid; gap: 5px; padding: 6px; border-radius: 6px; background: var(--bg-3); }
+.ds-card .img { height: 28px; border-radius: 3px; background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 45%, var(--bg-2)), var(--bg-2)); }
+.ds-card .ln { height: 4px; width: 70%; border-radius: 2px; background: var(--text-3); }
+.ds-card .ds-btn { justify-self: start; }
+.ds-tpl { width: 80%; display: grid; gap: 5px; }
+.ds-tpl .hd { height: 16px; border-radius: 3px; border: 1px dashed var(--text-3); }
+.ds-tpl .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.ds-tpl .row i { height: 14px; border-radius: 2px; border: 1px dashed var(--text-3); }
+.ds-tpl.page .hd { border: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--brand) 55%, var(--bg-3)), var(--bg-3)); }
+.ds-tpl.page .row i { border: 0; background: var(--bg-3); }
+.ds-tpl.page .row:first-of-type i:first-child { box-shadow: 0 0 0 2px var(--brand); }
+.ds-token { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 16px; }
+.ds-token > .mono { color: var(--text-2); }
+.hw-swatches { display: flex; gap: 8px; }
+.hw-swatches button { width: 30px; height: 30px; border-radius: 50%; background: var(--c); border: 3px solid var(--bg-2); box-shadow: 0 0 0 1px var(--line); cursor: pointer; transition: box-shadow .2s, transform .2s; }
+.hw-swatches button:hover { transform: scale(1.1); }
+.hw-swatches button[aria-checked='true'] { box-shadow: 0 0 0 2px var(--text); }
+.ds-token .hw-note { flex-basis: 100%; }
+
+/* 05 Accessibility */
+.a11y-defs { position: absolute; width: 0; height: 0; }
+.a11y-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(16px, 3vw, 32px); align-items: center; }
+.a11y-sample { display: grid; gap: 12px; transition: filter .3s; }
+.a11y-card { --fg: hsl(0 0% 38%); display: grid; gap: 6px; padding: 22px; border-radius: 12px; background: #121416; border: 1px solid #262a2e; color: var(--fg); }
+.a11y-card strong { font-size: 22px; letter-spacing: -0.02em; }
+.a11y-kicker { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.a11y-body { font-size: 14px; }
+.a11y-status { display: flex; flex-wrap: wrap; gap: 6px; }
+.a11y-status span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: color-mix(in srgb, var(--s) 18%, transparent); color: var(--s); border: 1px solid color-mix(in srgb, var(--s) 45%, transparent); }
+.a11y-tools { display: grid; gap: 12px; }
+.a11y-tools label { color: var(--text-3); }
+.a11y-tools input[type='range'] { width: 100%; accent-color: var(--accent); }
+.a11y-ratio { display: flex; align-items: baseline; gap: 6px; }
+.a11y-ratio strong { font-size: 44px; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.a11y-ratio .mono { color: var(--text-3); }
+.a11y-badges { display: flex; gap: 6px; }
+.a11y-badges span { font: 600 12px var(--mono); padding: 5px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--text-3); text-decoration: line-through; transition: all .25s; }
+.a11y-badges span.ok { background: color-mix(in srgb, #30a46c 22%, transparent); border-color: color-mix(in srgb, #30a46c 60%, transparent); color: var(--text); text-decoration: none; }
+.a11y-badges span.ok::before { content: '✓ '; }
+.a11y-tools .hw-chips { justify-content: flex-start; }
+
+/* 06 Usability testing loop */
+.hw-loop { align-items: center; }
+.loop-ring { --sz: 290px; --r: calc(var(--sz) * .386); position: relative; width: var(--sz); height: var(--sz); margin: 6px auto; }
+.loop-ring > svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.loop-track { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 6; }
+.loop-arc { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+.loop-orbit { position: absolute; inset: 0; pointer-events: none; }
+.loop-orbit i { position: absolute; left: 50%; top: calc(50% - var(--r)); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.loop-mid { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; pointer-events: none; }
+.loop-mid strong { font-size: 40px; line-height: 1; letter-spacing: -0.03em; }
+.loop-mid .mono { color: var(--text-3); font-size: 11px; }
+.loop-stop { position: absolute; left: 50%; top: 50%; width: 76px; height: 64px; margin: -32px 0 0 -38px; display: grid; justify-items: center; align-content: center; gap: 3px;
+  transform: rotate(var(--a)) translateY(calc(var(--r) * -1)) rotate(calc(var(--a) * -1)); border: 0; background: none; color: var(--text-3); font: 600 12.5px var(--font); cursor: pointer; padding: 0; }
+.loop-stop i { width: 38px; height: 38px; display: grid; place-items: center; font-size: 18px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); transition: all .3s; }
+.loop-stop span { background: var(--bg-2); padding: 0 4px; border-radius: 4px; transition: color .3s; }
+.loop-stop:hover, .loop-stop.on { color: var(--text); }
+.loop-stop:hover i { border-color: var(--text-3); }
+.loop-stop.on i { background: var(--accent); color: var(--accent-ink); border-color: transparent; transform: scale(1.12); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 20%, transparent); }
+
+@media (max-width: 960px) {
+  .hw { grid-template-columns: 1fr; }
+  .hw-tabs { position: static; flex-direction: row; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); }
+  .hw-tabs::-webkit-scrollbar { display: none; }
+  .hw-tab { width: auto; flex: none; scroll-snap-align: start; padding: 12px 16px; font-size: 15px; white-space: nowrap; }
+}
+@media (max-width: 680px) {
+  .hw-stats { grid-template-columns: 1fr; }
+  .hw-stat { padding: 18px 4px; }
+  .hw-stat + .hw-stat { border-left: 0; border-top: 1px solid var(--line); }
+  .hw-copy { grid-template-columns: 1fr; }
+  .hw-orig { grid-column: 1; grid-row: auto; max-width: 260px; }
+  .hw-viz { min-height: 0; padding: 16px 12px; }
+  .dd-labels text { font-size: 22px; }
+  .net-node text { font-size: 20px; }
+  .ds-levels { grid-template-columns: repeat(3, 1fr); row-gap: 18px; }
+  .ds-levels li:nth-child(4)::before { display: none; }
+  .a11y-grid { grid-template-columns: 1fr; }
+  .mp-room { height: 210px; }
+  .loop-ring { --sz: 260px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hw-panel:not([hidden]), .dd-route, .net-links path, .net-node.core circle { animation: none; }
+  .dd-route { stroke-dashoffset: 0; }
+  .dd-dot { display: none; }
+  .mp-screen, .hw-ds .ds-box * { transition: none; }
+}
 
 /* Illustration strip on home */
 .strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 38%); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
@@ -465,10 +675,16 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 html.intro-b .hero-slides { opacity: 0; }
 html.intro-b [data-intro] { opacity: 0; }
 html.intro-b .hero::after { opacity: 0; }
-html.intro-b .hero-slides.boot { opacity: 1; animation: crt-on calc(1.4s * var(--k)) cubic-bezier(.6,0,.2,1) both; }
-html.intro-b .hero.shade::after { opacity: 1; transition: opacity calc(1.6s * var(--k)) ease; }
-html.intro-b [data-intro].in { opacity: 1; animation: glitch-in calc(.84s * var(--k)) steps(1, end) both; }
-html.intro-b [data-intro].in.soft { animation: glitch-soft calc(.68s * var(--k)) steps(1, end) both; }
+html.intro-b .hero-slides.boot { opacity: 1; animation: crt-on calc(1.4s * var(--kl)) cubic-bezier(.6,0,.2,1) both; }
+html.intro-b .hero.shade::after { opacity: 1; transition: opacity calc(1.6s * var(--kl)) ease; }
+html.intro-b [data-intro].in { opacity: 1; animation: glitch-in calc(.84s * var(--kl)) steps(1, end) both; }
+html.intro-b [data-intro].in.soft { animation: glitch-soft calc(.68s * var(--kl)) steps(1, end) both; }
+/* Body copy types out instead (see typeOut()): the untyped rest stays in place, hidden, so
+   nothing reflows; a block caret rides at the end of what's been typed. */
+html.intro-b [data-intro].in.tw, html.gl-b .gx-p.in.tw, html.gl-c .gx-p.in.tw { animation: none; }
+.tw-rest { visibility: hidden; }
+.tw-caret { display: inline-block; position: relative; width: 0; height: 1em; vertical-align: -.12em; }
+.tw-caret::after { content: ''; position: absolute; left: 1px; top: 0; bottom: 0; width: .5em; background: var(--accent); opacity: .85; }
 
 @keyframes crt-on {
   0%   { clip-path: inset(50% 0 50% 0); filter: brightness(4) saturate(0) contrast(1.4); transform: scale(1.04); }
@@ -501,13 +717,13 @@ html.intro-b [data-intro].in.soft { animation: glitch-soft calc(.68s * var(--k))
 }
 
 /* The effects layer: scanlines, a sweep bar and short-lived HUD fragments. */
-.intro-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; transition: opacity calc(.8s * var(--k)) ease; }
+.intro-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; transition: opacity calc(.8s * var(--kl)) ease; }
 .intro-fx.out { opacity: 0; }
 .intro-fx .lines { position: absolute; inset: 0; opacity: .5;
   background: repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
 .intro-fx .sweep { position: absolute; left: 0; right: 0; height: 140px; top: -140px;
   background: linear-gradient(180deg, transparent, rgba(255,206,60,.06) 70%, rgba(255,240,200,.5) 99%, transparent);
-  animation: sweep calc(1.75s * var(--k)) cubic-bezier(.5,0,.3,1) forwards; }
+  animation: sweep calc(1.75s * var(--kl)) cubic-bezier(.5,0,.3,1) forwards; }
 @keyframes sweep { to { top: 100%; } }
 .hud { position: absolute; font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.75); white-space: nowrap;
   animation: hud-flicker var(--life, .5s) steps(1, end) forwards; }
@@ -528,7 +744,7 @@ html.intro-b [data-intro].in.soft { animation: glitch-soft calc(.68s * var(--k))
 .hud.link { display: flex; align-items: center; gap: 9px; }
 .hud.link.flip { flex-direction: row-reverse; }
 .hud.link .wire { position: relative; height: 1px; background: currentColor; transform-origin: left;
-  animation: bar-grow calc(.45s * var(--k)) cubic-bezier(.3,0,.2,1) both; }
+  animation: bar-grow calc(.45s * var(--kl)) cubic-bezier(.3,0,.2,1) both; }
 .hud.link.flip .wire { transform-origin: right; }
 .hud.link .wire::before, .hud.link .wire::after { content: ''; position: absolute; top: -2.5px; width: 6px; height: 6px; background: currentColor; }
 .hud.link .wire::before { left: -3px; }
@@ -626,10 +842,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   <section class="hero" aria-label="Introduction">
     <div class="hero-slides" id="heroSlides">
       <img class="on" src="img/04-FACILITY.jpg" alt="Illustration: figures in a yellow room beside a giant black sphere">
-      <img src="img/01-HUNT.jpg" alt="" loading="lazy">
-      <img src="img/02-AMBUSH.jpg" alt="" loading="lazy">
-      <img src="img/03-MOMENTS.jpg" alt="" loading="lazy">
-      <img src="img/05-SETTINGS.jpg" alt="" loading="lazy">
+      <img src="img/01-HUNT.jpg" alt="">
+      <img src="img/02-AMBUSH.jpg" alt="">
+      <img src="img/03-MOMENTS.jpg" alt="">
+      <img src="img/05-SETTINGS.jpg" alt="">
     </div>
     <div class="wrap hero-content">
       <span class="eyebrow" data-intro="1" data-scramble>Product designer &amp; illustrator · Sydney</span>
@@ -699,30 +915,206 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
         <div><span class="eyebrow">Experience</span><h2>How I work</h2></div>
         <p>Throughout the last 7 years, countless projects, features and 2 products, I’ve had the chance to refine my skills through a range of responsibilities.</p>
       </div>
-      <div class="exp">
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">01</span><h3>End to end feature design</h3><p>The process at Deltatre is based on the Double Diamond. We’ve slowly shaped the process to fit our product teams workflow.</p></div>
-          <div class="exp-media"><img src="img/UX_Process_alt.jpg" alt="End to end feature design: the design process used at Deltatre, based on the Double Diamond" loading="lazy" data-zoom></div>
+      <!-- How I work: an infographic. Stat counters, then six practices as tabs; each tab has
+           its own small animated, interactive diagram (wired up in the "How I work" script). -->
+      <div class="hw-stats reveal" aria-label="At a glance">
+        <div class="hw-stat"><strong class="hw-count" data-to="7">7</strong><span>years designing products at Massive Interactive &amp; Deltatre</span></div>
+        <div class="hw-stat"><strong class="hw-count" data-to="2">2</strong><span>white label products, AXIS and MTRIBES</span></div>
+        <div class="hw-stat"><strong class="hw-count" data-to="6">6</strong><span>device families, from TVs and consoles to phones</span></div>
+      </div>
+
+      <div class="hw reveal" id="hw">
+        <div class="hw-tabs" role="tablist" aria-label="How I work">
+          <button class="hw-tab" role="tab" id="hw-t1" aria-controls="hw-p1" aria-selected="true"><span class="hw-n">01</span><span class="hw-l">End to end feature design</span><i class="hw-bar" aria-hidden="true"></i></button>
+          <button class="hw-tab" role="tab" id="hw-t2" aria-controls="hw-p2" aria-selected="false" tabindex="-1"><span class="hw-n">02</span><span class="hw-l">Cross-discipline collaboration</span><i class="hw-bar" aria-hidden="true"></i></button>
+          <button class="hw-tab" role="tab" id="hw-t3" aria-controls="hw-p3" aria-selected="false" tabindex="-1"><span class="hw-n">03</span><span class="hw-l">Multi-platform design</span><i class="hw-bar" aria-hidden="true"></i></button>
+          <button class="hw-tab" role="tab" id="hw-t4" aria-controls="hw-p4" aria-selected="false" tabindex="-1"><span class="hw-n">04</span><span class="hw-l">Design systems</span><i class="hw-bar" aria-hidden="true"></i></button>
+          <button class="hw-tab" role="tab" id="hw-t5" aria-controls="hw-p5" aria-selected="false" tabindex="-1"><span class="hw-n">05</span><span class="hw-l">Designing for accessibility</span><i class="hw-bar" aria-hidden="true"></i></button>
+          <button class="hw-tab" role="tab" id="hw-t6" aria-controls="hw-p6" aria-selected="false" tabindex="-1"><span class="hw-n">06</span><span class="hw-l">Usability testing</span><i class="hw-bar" aria-hidden="true"></i></button>
         </div>
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">02</span><h3>Cross Discipline Collaboration</h3><p>I've always embraced collaboration with all disciplines involved in creating our products. Early involvement of key parties from each discipline allows for discussing any technical insights and feasibility concerns.</p></div>
-          <div class="exp-media"><img src="img/Team_BW.jpg" alt="The team working together" loading="lazy" data-zoom></div>
-        </div>
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">03</span><h3>Multi-Platform Design</h3><p>I've created consistent experiences across different devices and operating systems. I've designed for devices such as TV's, set top boxes, consoles, tablet, mobile and computer browsers. Leveraging their native components and utilising guidelines for a more efficient development.</p></div>
-          <div class="exp-media"><img src="img/multi-platform-alt.jpg" alt="One design shown across several devices" loading="lazy" data-zoom></div>
-        </div>
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">04</span><h3>Design Systems</h3><p>I’ve worked on design systems that accompany simple products aimed at single device targets, as well as massive multi-platform apps. Utilising atomic design methodology that breaks down interfaces into smaller components and allows more granular control, as well as ability to apply global changes rapidly.</p></div>
-          <div class="exp-media"><img src="img/DS_Header.jpg" alt="Design system components" loading="lazy" data-zoom></div>
-        </div>
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">05</span><h3>Designing for accessibility</h3><p>I’ve included accessibility as one of the key steps of the design process for features I've worked on. Over the years I've utilised WCAG and platform specific guidelines, as well as an array of tools such as contrast checks and colour blindness filters to create inclusive designs.</p></div>
-          <div class="exp-media"><img src="img/design_for_accessibility.png" alt="Accessibility annotations on a design" loading="lazy" data-zoom></div>
-        </div>
-        <div class="exp-row reveal">
-          <div><span class="eyebrow">06</span><h3>Usability Testing</h3><p>I use prototyping to validate most of my design decisions, investigating concerns and identifying areas for improvement. When possible, I've facilitated usability testing utilising prototypes, created based on a script that guides the user through a series of tasks. I discuss usability testing further in the <a href="#/work/recurring-schedule">Recurring Schedule case study</a>.</p></div>
-          <div class="exp-media"><img src="img/usability-testing-process.jpg" alt="The usability testing process" loading="lazy" data-zoom></div>
+
+        <div class="hw-stage">
+          <!-- 01: the Double Diamond. Each half is a phase you can pick; a dot runs the route. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p1" aria-labelledby="hw-t1" tabindex="0">
+            <div class="hw-viz hw-dd">
+              <svg viewBox="0 0 640 290" role="img" aria-label="The Double Diamond: discover, define, develop, deliver">
+                <path class="dd-route" id="ddRoute" pathLength="1" d="M20 145 L170 35 L320 145 L470 35 L620 145 L470 255 L320 145 L170 255 Z"/>
+                <g class="dd-phases">
+                  <path class="dd-ph" data-i="0" d="M20 145 L170 35 L170 255 Z"/>
+                  <path class="dd-ph" data-i="1" d="M170 35 L320 145 L170 255 Z"/>
+                  <path class="dd-ph" data-i="2" d="M320 145 L470 35 L470 255 Z"/>
+                  <path class="dd-ph" data-i="3" d="M470 35 L620 145 L470 255 Z"/>
+                </g>
+                <line class="dd-split" x1="170" y1="35" x2="170" y2="255"/><line class="dd-split" x1="470" y1="35" x2="470" y2="255"/>
+                <g class="dd-labels">
+                  <text x="112" y="150">Discover</text><text x="232" y="150">Define</text>
+                  <text x="410" y="150">Develop</text><text x="532" y="150">Deliver</text>
+                </g>
+                <text class="dd-cap" x="170" y="282">Problem</text><text class="dd-cap" x="470" y="282">Solution</text>
+                <circle class="dd-dot" r="6"/>
+              </svg>
+              <div class="hw-chips" role="group" aria-label="Phases">
+                <button class="hw-chip" data-dd="0" aria-pressed="true">Discover</button>
+                <button class="hw-chip" data-dd="1" aria-pressed="false">Define</button>
+                <button class="hw-chip" data-dd="2" aria-pressed="false">Develop</button>
+                <button class="hw-chip" data-dd="3" aria-pressed="false">Deliver</button>
+              </div>
+              <div class="hw-note" aria-live="polite" id="ddNote"></div>
+            </div>
+            <div class="hw-copy">
+              <h3>End to end feature design</h3>
+              <p>The process at Deltatre is based on the Double Diamond. We’ve slowly shaped the process to fit our product teams workflow.</p>
+              <figure class="hw-orig"><img src="img/UX_Process_alt.jpg" alt="End to end feature design: the design process used at Deltatre, based on the Double Diamond" loading="lazy" data-zoom><figcaption>The real process diagram. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
+
+          <!-- 02: collaboration. Design in the middle; signals run to and from each discipline. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p2" aria-labelledby="hw-t2" tabindex="0" hidden>
+            <div class="hw-viz hw-net">
+              <svg viewBox="0 0 640 290" role="img" aria-label="Design at the centre, connected to product, engineering, QA and clients">
+                <g class="net-links">
+                  <path id="nl0" d="M320 145 L120 60"/><path id="nl1" d="M320 145 L520 60"/>
+                  <path id="nl2" d="M320 145 L120 230"/><path id="nl3" d="M320 145 L520 230"/>
+                </g>
+                <g class="net-pulses"></g>
+                <g class="net-node core"><circle cx="320" cy="145" r="46"/><text x="320" y="151">Design</text></g>
+                <g class="net-node" data-n="0" tabindex="0" role="button" aria-label="Product"><circle cx="120" cy="60" r="36"/><text x="120" y="66">Product</text></g>
+                <g class="net-node" data-n="1" tabindex="0" role="button" aria-label="Engineering"><circle cx="520" cy="60" r="36"/><text x="520" y="66">Dev</text></g>
+                <g class="net-node" data-n="2" tabindex="0" role="button" aria-label="QA"><circle cx="120" cy="230" r="36"/><text x="120" y="236">QA</text></g>
+                <g class="net-node" data-n="3" tabindex="0" role="button" aria-label="Clients"><circle cx="520" cy="230" r="36"/><text x="520" y="236">Clients</text></g>
+              </svg>
+              <div class="hw-note" aria-live="polite" id="netNote"></div>
+            </div>
+            <div class="hw-copy">
+              <h3>Cross-discipline collaboration</h3>
+              <p>I've always embraced collaboration with all disciplines involved in creating our products. Early involvement of key parties from each discipline allows for discussing any technical insights and feasibility concerns.</p>
+              <figure class="hw-orig"><img src="img/Team_BW.jpg" alt="The team working together" loading="lazy" data-zoom><figcaption>The team at work. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
+
+          <!-- 03: one layout, many screens. The frame reshapes for each device. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p3" aria-labelledby="hw-t3" tabindex="0" hidden>
+            <div class="hw-viz hw-mp">
+              <div class="mp-devices" role="group" aria-label="Devices">
+                <button class="hw-chip" data-dev="0" aria-pressed="true"><i class="ph-bold ph-television" aria-hidden="true"></i>TV</button>
+                <button class="hw-chip" data-dev="1" aria-pressed="false"><i class="ph-bold ph-hard-drives" aria-hidden="true"></i>Set top box</button>
+                <button class="hw-chip" data-dev="2" aria-pressed="false"><i class="ph-bold ph-game-controller" aria-hidden="true"></i>Console</button>
+                <button class="hw-chip" data-dev="3" aria-pressed="false"><i class="ph-bold ph-device-tablet" aria-hidden="true"></i>Tablet</button>
+                <button class="hw-chip" data-dev="4" aria-pressed="false"><i class="ph-bold ph-device-mobile" aria-hidden="true"></i>Mobile</button>
+                <button class="hw-chip" data-dev="5" aria-pressed="false"><i class="ph-bold ph-browser" aria-hidden="true"></i>Browser</button>
+              </div>
+              <div class="mp-room">
+                <div class="mp-screen" aria-hidden="true">
+                  <div class="mp-chrome"><i></i><i></i><i></i></div>
+                  <div class="mp-ui">
+                    <div class="mp-nav"><b></b><span></span><span></span><span></span></div>
+                    <div class="mp-hero"><span></span><span></span></div>
+                    <div class="mp-rail"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                  </div>
+                </div>
+              </div>
+              <div class="hw-note mono" aria-live="polite" id="mpNote"></div>
+            </div>
+            <div class="hw-copy">
+              <h3>Multi-platform design</h3>
+              <p>I've created consistent experiences across different devices and operating systems. I've designed for devices such as TV's, set top boxes, consoles, tablet, mobile and computer browsers. Leveraging their native components and utilising guidelines for a more efficient development.</p>
+              <figure class="hw-orig"><img src="img/multi-platform-alt.jpg" alt="One design shown across several devices" loading="lazy" data-zoom><figcaption>One design across devices. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
+
+          <!-- 04: atomic design. Change one token and it flows through every level. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p4" aria-labelledby="hw-t4" tabindex="0" hidden>
+            <div class="hw-viz hw-ds">
+              <ol class="ds-levels">
+                <li><div class="ds-box"><div class="ds-atoms"><i class="sw"></i><b>Aa</b><i class="ph-fill ph-play-circle"></i></div></div><span>Atoms</span></li>
+                <li><div class="ds-box"><div class="ds-btn"><i class="ph-fill ph-play"></i>Play</div><div class="ds-field"></div></div><span>Molecules</span></li>
+                <li><div class="ds-box"><div class="ds-card"><div class="img"></div><div class="ln"></div><div class="ds-btn sm"><i class="ph-fill ph-play"></i></div></div></div><span>Organisms</span></li>
+                <li><div class="ds-box"><div class="ds-tpl"><div class="hd"></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div></div></div><span>Templates</span></li>
+                <li><div class="ds-box"><div class="ds-tpl page"><div class="hd"></div><div class="row"><i></i><i></i><i></i></div><div class="row"><i></i><i></i><i></i></div></div></div><span>Pages</span></li>
+              </ol>
+              <div class="ds-token">
+                <span class="mono">color.brand</span>
+                <div class="hw-swatches" role="radiogroup" aria-label="Brand colour token">
+                  <button role="radio" aria-checked="true" aria-label="Yellow" style="--c:#ffce3c"></button>
+                  <button role="radio" aria-checked="false" aria-label="Blue" style="--c:#5aa9ff"></button>
+                  <button role="radio" aria-checked="false" aria-label="Pink" style="--c:#ff6b9a"></button>
+                  <button role="radio" aria-checked="false" aria-label="Green" style="--c:#4fd18b"></button>
+                </div>
+                <span class="hw-note mono" aria-live="polite" id="dsNote">Pick a colour: one token change, every level updates</span>
+              </div>
+            </div>
+            <div class="hw-copy">
+              <h3>Design systems</h3>
+              <p>I’ve worked on design systems that accompany simple products aimed at single device targets, as well as massive multi-platform apps. Utilising atomic design methodology that breaks down interfaces into smaller components and allows more granular control, as well as ability to apply global changes rapidly.</p>
+              <figure class="hw-orig"><img src="img/DS_Header.jpg" alt="Design system components" loading="lazy" data-zoom><figcaption>Design system components. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
+
+          <!-- 05: a contrast checker and colour-vision filters, live. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p5" aria-labelledby="hw-t5" tabindex="0" hidden>
+            <div class="hw-viz hw-a11y">
+              <svg class="a11y-defs" aria-hidden="true" focusable="false">
+                <filter id="cvd-protan"><feColorMatrix type="matrix" values=".567 .433 0 0 0  .558 .442 0 0 0  0 .242 .758 0 0  0 0 0 1 0"/></filter>
+                <filter id="cvd-deutan"><feColorMatrix type="matrix" values=".625 .375 0 0 0  .7 .3 0 0 0  0 .3 .7 0 0  0 0 0 1 0"/></filter>
+                <filter id="cvd-tritan"><feColorMatrix type="matrix" values=".95 .05 0 0 0  0 .433 .567 0 0  0 .475 .525 0 0  0 0 0 1 0"/></filter>
+              </svg>
+              <div class="a11y-grid">
+                <div class="a11y-sample" id="a11ySample">
+                  <div class="a11y-card">
+                    <span class="a11y-kicker">Live · Matchday 12</span>
+                    <strong>Highlights are ready</strong>
+                    <span class="a11y-body">Text contrast follows the slider.</span>
+                  </div>
+                  <div class="a11y-status">
+                    <span style="--s:#e5484d"><i class="ph-fill ph-x-circle"></i>Error</span>
+                    <span style="--s:#30a46c"><i class="ph-fill ph-check-circle"></i>Saved</span>
+                    <span style="--s:#f5a524"><i class="ph-fill ph-warning"></i>Warning</span>
+                  </div>
+                </div>
+                <div class="a11y-tools">
+                  <label class="mono" for="a11yRange">Text lightness</label>
+                  <input type="range" id="a11yRange" min="8" max="100" value="38">
+                  <div class="a11y-ratio"><strong id="a11yRatio">–</strong><span class="mono">: 1 contrast</span></div>
+                  <div class="a11y-badges">
+                    <span data-min="3">AA large</span><span data-min="4.5">AA</span><span data-min="7">AAA</span>
+                  </div>
+                  <div class="hw-chips" role="group" aria-label="Simulate colour vision">
+                    <button class="hw-chip" data-cvd="" aria-pressed="true">Typical</button>
+                    <button class="hw-chip" data-cvd="protan" aria-pressed="false">Protanopia</button>
+                    <button class="hw-chip" data-cvd="deutan" aria-pressed="false">Deuteranopia</button>
+                    <button class="hw-chip" data-cvd="tritan" aria-pressed="false">Tritanopia</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hw-copy">
+              <h3>Designing for accessibility</h3>
+              <p>I’ve included accessibility as one of the key steps of the design process for features I've worked on. Over the years I've utilised WCAG and platform specific guidelines, as well as an array of tools such as contrast checks and colour blindness filters to create inclusive designs.</p>
+              <figure class="hw-orig"><img src="img/design_for_accessibility.png" alt="Accessibility annotations on a design" loading="lazy" data-zoom><figcaption>Accessibility annotations. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
+
+          <!-- 06: the testing loop. A dot goes round; each stop lights up as it passes. -->
+          <div class="hw-panel" role="tabpanel" id="hw-p6" aria-labelledby="hw-t6" tabindex="0" hidden>
+            <div class="hw-viz hw-loop">
+              <div class="loop-ring">
+                <svg viewBox="0 0 300 300" aria-hidden="true"><circle class="loop-track" cx="150" cy="150" r="116"/><circle class="loop-arc" cx="150" cy="150" r="116" pathLength="100"/></svg>
+                <div class="loop-orbit" aria-hidden="true"><i></i></div>
+                <div class="loop-mid"><strong id="loopRound">1</strong><span class="mono">Round</span></div>
+                <button class="loop-stop" data-s="0" style="--a:0deg"><i class="ph-bold ph-scroll"></i><span>Script</span></button>
+                <button class="loop-stop" data-s="1" style="--a:72deg"><i class="ph-bold ph-cursor-click"></i><span>Prototype</span></button>
+                <button class="loop-stop" data-s="2" style="--a:144deg"><i class="ph-bold ph-users-three"></i><span>Test</span></button>
+                <button class="loop-stop" data-s="3" style="--a:216deg"><i class="ph-bold ph-lightbulb"></i><span>Findings</span></button>
+                <button class="loop-stop" data-s="4" style="--a:288deg"><i class="ph-bold ph-arrows-clockwise"></i><span>Iterate</span></button>
+              </div>
+              <div class="hw-note" aria-live="polite" id="loopNote"></div>
+            </div>
+            <div class="hw-copy">
+              <h3>Usability testing</h3>
+              <p>I use prototyping to validate most of my design decisions, investigating concerns and identifying areas for improvement. When possible, I've facilitated usability testing utilising prototypes, created based on a script that guides the user through a series of tasks. I discuss usability testing further in the <a href="#/work/recurring-schedule">Recurring Schedule case study</a>.</p>
+              <figure class="hw-orig"><img src="img/usability-testing-process.jpg" alt="The usability testing process" loading="lazy" data-zoom><figcaption>The testing process. Click to enlarge.</figcaption></figure>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1490,8 +1882,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   <div class="wrap mono"><span>© <span id="year">2026</span> Marek Heiland</span><span>Sydney, Australia</span></div>
 </footer>
 
-<!-- A/B lab: a floating button that opens the page variations. Hidden now that the
-     variations are chosen; remove the hidden attribute to bring it back. -->
+<!-- A/B lab: a floating button that opens the page variations. Hidden by default; the
+     script shows it only when the site runs locally (see window.__lab in the head). -->
 <button class="lab-btn" id="labBtn" hidden aria-label="Page variations" aria-expanded="false" aria-controls="labPanel">
   <i class="ph-fill ph-test-tube" aria-hidden="true"></i><span class="dot"></span>
 </button>
@@ -1624,7 +2016,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     gxGen++; gxQueue = []; gxBusy = false;
     units.forEach((u) => {
       u.classList.remove('in'); u._gxPending = false;
-      u._parts.forEach((p) => p.classList.remove('in'));
+      u._parts.forEach((p) => { typeDone(p); p.classList.remove('in', 'tw'); });
       if (io) { io.unobserve(u); io.observe(u); }
     });
     gxLayer.replaceChildren();
@@ -1915,7 +2307,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   // One knob for the whole sequence's pace: 1 = the original 3.8s, 1.35 ≈ 5.2s.
   // The CSS animation lengths below (crt-on, glitch-in, glitch-soft, sweep) are scaled to match.
   const BASE_SLOW = 1.35;
-  let SLOW = BASE_SLOW;       // BASE_SLOW divided by the panel's animation speed
+  const LANDING = 1 / 0.75;   // the landing runs at 0.75× speed (the panel's -0.25) on top of the panel setting
+  let SLOW = BASE_SLOW * LANDING;   // BASE_SLOW × LANDING, divided by the panel's animation speed
   const later = (ms, fn) => introTimers.push(setTimeout(fn, ms * SLOW));
 
   function hud(kind, x, y, life, extra = {}) {
@@ -1964,6 +2357,55 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       if (!done && alive()) el._raf = requestAnimationFrame(step); else node.textContent = final;
     };
     el._raf = requestAnimationFrame(step);
+  }
+  // Body copy types out letter by letter, across nested inline tags (links, bold). Each text
+  // node keeps its typed part and a hidden span with the rest, so the paragraph never reflows.
+  const BODY = 'p, li, dd, .quote, .callout, figcaption';
+  // Lab "Typed text": A = body copy types and headings decode; B = headings (and the hero
+  // eyebrow) type, and body copy glitches in.
+  let typeHeads = (window.__variants || {}).text === 'B';
+  const typesOut = (el) => typeHeads ? el.matches('h1, h2, h3, [data-scramble]') : el.matches(BODY);
+  const decodes = (el) => !typeHeads && el.matches('h1, h2, h3');
+  const TYPE_MS = 9;          // per character, before the pace knobs
+  const typeLen = (el) => Math.min(1100, Math.max(350, el.textContent.trim().length * TYPE_MS));
+  function typeOut(el, dur, alive = () => true) {
+    typeDone(el);
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) if (walker.currentNode.textContent) nodes.push(walker.currentNode);
+    const total = nodes.reduce((n, t) => n + t.textContent.length, 0);
+    if (!total) return;
+    const caret = document.createElement('span'); caret.className = 'tw-caret'; caret.setAttribute('aria-hidden', 'true');
+    el._tw = { caret, parts: nodes.map((node) => {
+      const full = node.textContent, rest = document.createElement('span');
+      rest.className = 'tw-rest'; rest.textContent = full; node.textContent = '';
+      node.after(rest);
+      return { node, full, rest };
+    }) };
+    el.classList.add('tw');
+    const t0 = performance.now();
+    const step = (now) => {
+      if (!el._tw) return;
+      let n = Math.round(Math.min(1, (now - t0) / dur) * total), placed = false;
+      for (const p of el._tw.parts) {
+        const k = Math.min(n, p.full.length);
+        n -= k;
+        if (p.node.textContent.length !== k) { p.node.textContent = p.full.slice(0, k); p.rest.textContent = p.full.slice(k); }
+        // The caret sits after the last character typed so far.
+        if (!placed && (k < p.full.length || !n)) { if (caret.previousSibling !== p.node) p.node.after(caret); placed = true; }
+      }
+      if (now - t0 < dur && alive()) el._twRaf = requestAnimationFrame(step);
+      else typeDone(el);
+    };
+    el._twRaf = requestAnimationFrame(step);
+  }
+  // Finish (or undo) a typing run: full text back, helper spans gone.
+  function typeDone(el) {
+    if (!el._tw) return;
+    cancelAnimationFrame(el._twRaf);
+    el._tw.parts.forEach((p) => { p.node.textContent = p.full; p.rest.remove(); });
+    el._tw.caret.remove();
+    el._tw = null;
   }
 
   /* ---- Glitched loading (scroll variant B): effects around one piece as it glitches in ---- */
@@ -2014,9 +2456,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
 
     // Beat 3: the parts.
     plan.forEach(({ p, k, start }) => at(start, () => {
+      if (typesOut(p)) typeOut(p, typeLen(p) * GX, () => gen === gxGen);
       p.classList.add('in');
       if (k === 0) sweep(p);
-      if (p.matches('h1, h2, h3')) scramble(p, 900 * GX, () => true);
+      if (decodes(p)) scramble(p, 900 * GX, () => true);
     }));
   }
   // A short-lived readout, crosshair, bar or rule somewhere in or just around a unit.
@@ -2036,16 +2479,19 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     const gen = gxGen;
     const at = (ms, fn) => setTimeout(() => { if (gen === gxGen) fn(); }, ms * GXC);
     const x = r.left + scrollX, y = r.top + scrollY, w = r.width, h = r.height;
-    const n = u._parts.length, start = 450;
+    // Variant D (html.gl-bare): no brackets or readout, so the parts start straight away.
+    const bare = html.classList.contains('gl-bare');
+    const n = u._parts.length, start = bare ? 0 : 450;
     const step = n > 1 ? Math.min(70, 350 / (n - 1)) : 0;
     const hold = (start + step * Math.max(0, n - 1) + 900) * GXC;
     gxCount++;
-    gxBit('gx-corners', x - 6, y - 6, hold, w + 12, h + 12);
-    if (w > 220) gxBit('hud sky gx-read gx-quiet', x + w, y - 20, hold, 0, 0,
+    if (!bare) gxBit('gx-corners', x - 6, y - 6, hold, w + 12, h + 12);
+    if (w > 220 && !bare) gxBit('hud sky gx-read gx-quiet', x + w, y - 20, hold, 0, 0,
       `${pick(['SCAN', 'LOAD', 'SYNC'])} ${String(gxCount).padStart(2, '0')}`);
     u._parts.forEach((p, i) => at(start + i * step, () => {
+      if (typesOut(p)) typeOut(p, typeLen(p) * GXC, () => gen === gxGen);
       p.classList.add('in');
-      if (p.matches('h1, h2, h3')) scramble(p, 600 * GXC, () => true);
+      if (decodes(p)) scramble(p, 600 * GXC, () => true);
     }));
   }
 
@@ -2060,12 +2506,13 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   function cancelIntro() {
     introTimers.forEach(clearTimeout); introTimers = [];
     $$('[data-intro]').forEach((el) => {
-      el.classList.remove('in', 'soft');
+      typeDone(el);
+      el.classList.remove('in', 'soft', 'tw');
       if (el._raf) cancelAnimationFrame(el._raf);
       if (el._final) el._final[0].textContent = el._final[1];
     });
     introFx?.remove(); introFx = null;
-    heroSlides.classList.remove('boot'); heroEl.classList.remove('shade');
+    heroSlides.classList.remove('boot', 'flick'); heroEl.classList.remove('shade');
     html.classList.remove('intro-b');
     introRunning = false;
   }
@@ -2086,7 +2533,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
 
     // 0–2.5s: black screen, the boot readout and a loading bar in the middle, with readouts
     // ticking over beneath them. HOLD is how much longer than the original 1s the black lasts.
-    const HOLD = 1500 / BASE_SLOW;   // 1.5s of real time at normal speed (later() multiplies by SLOW)
+    const HOLD = 1500 / BASE_SLOW;   // 1.5s at 1× (later() multiplies by SLOW, so 2s at the landing's 0.75×)
     later(120, () => hud('', 'calc(50% - 90px)', 'calc(50% - 22px)', 900 + HOLD, { text: 'MH//OS — INITIALISING', acc: true }));
     later(220, () => hud('bar', 'calc(50% - 90px)', 'calc(50% + 2px)', 760 + HOLD, { w: 180, acc: true }));
     later(300, () => hud('cross', 6, 12, 600));
@@ -2101,7 +2548,15 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     later(1000 + HOLD, () => {
       heroSlides.classList.add('boot'); heroEl.classList.add('shade');
       const s = document.createElement('div'); s.className = 'sweep'; introFx?.appendChild(s);
+      heroSlides.classList.add('flick');
     });
+    // As it powers on, hard-cut through every slide (~2s in all), landing back on the first.
+    const FLICK = 400 / BASE_SLOW;   // 400ms per slide at 1× (~530ms at the landing's 0.75×)
+    for (let i = 1; i <= slides.length; i++)
+      later(1000 + HOLD + FLICK * i, () => {
+        show(i % slides.length);
+        if (i === slides.length) requestAnimationFrame(() => heroSlides.classList.remove('flick'));
+      });
     // Scan bits flicker around while things load in.
     for (let i = 0; i < 16; i++) later(rnd(950, 2900) + HOLD, randomBit);
 
@@ -2114,12 +2569,15 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     order.forEach((el) => {
       const big = el.matches('h1, .eyebrow, .hero-intro p, .btn-row .btn.primary');
       if (big) later(t - 90, () => frame(el, el.tagName === 'H1' ? 520 : 380));
+      const typed = typesOut(el), dur = typed ? typeLen(el) : 0;
       later(t, () => {
+        if (typed) typeOut(el, dur * SLOW, () => introRunning);
         el.classList.add('in');
         if (el.dataset.intro === 'soft') el.classList.add('soft');
-        if (el.hasAttribute('data-scramble')) scramble(el, (el.tagName === 'H1' ? 760 : 620) * SLOW);
+        if (!typed && el.hasAttribute('data-scramble')) scramble(el, (el.tagName === 'H1' ? 760 : 620) * SLOW);
       });
-      t += el.closest('#header') ? 45 : el.tagName === 'H1' ? 170 : 90;
+      // A typed paragraph mostly finishes before the next thing comes in.
+      t += typed ? dur * .75 : el.closest('#header') ? 45 : el.tagName === 'H1' ? 170 : 90;
     });
 
     later(t + 500, () => introFx?.classList.add('out'));
@@ -2152,14 +2610,14 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     const home = $('[data-route="home"]').classList.contains('active');
     if (document.hidden || !home || introRunning || heroEl.getBoundingClientRect().bottom < 120) { ambientNext(1500); return; }
     releaseHeld();
-    const k = SLOW / BASE_SLOW, n = Math.random() < .45 ? 3 : 2, span = rnd(1000, 2000);
+    const k = SLOW / (BASE_SLOW * LANDING), n = Math.random() < .45 ? 3 : 2, span = rnd(1000, 2000);
     const times = Array.from({ length: n }, (_, i) => i === 0 ? 0 : rnd(150, span)).sort((a, b) => a - b);
     times.forEach((t, i) => setTimeout(() => ambientBit(i === times.length - 1), t * k));
     ambientNext((times[times.length - 1] + rnd(4000, 8000)) * k);   // 4–8s until the next burst
   }
   function ambientBit(hold) {
     if (!ambOn) return;
-    const k = SLOW / BASE_SLOW, life = rnd(450, 1100) * k, r = Math.random();
+    const k = SLOW / (BASE_SLOW * LANDING), life = rnd(450, 1100) * k, r = Math.random();
     const acc = Math.random() < .4 ? ' acc' : '';
     const d = document.createElement('div');
     let left = rnd(45, 90);
@@ -2201,11 +2659,28 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       options: [
         { v: 'A', label: 'As it is', desc: 'Sections fade up as you scroll.' },
         { v: 'B', label: 'Glitched loading', desc: 'Sections, images and cards glitch in as they scroll into view, with scattered scan bits and a scan line over images; headings decode letter by letter.' },
-        { v: 'C', label: 'Clean scan', desc: 'Corner brackets, then within half a second the text glitches in and the image fades in slowly. No frames scanning over the content.' },
+        { v: 'C', label: 'Clean scan', desc: 'Corner brackets, then within half a second the text types in and the image fades in slowly. No frames scanning over the content.' },
+        { v: 'D', label: 'No frames', desc: 'As Clean scan, but without the corner brackets and readout: text types in and images fade in as soon as they scroll into view.' },
       ],
       play: (v) => {
         html.classList.toggle('gl-b', v === 'B' && !reduce);
-        html.classList.toggle('gl-c', v === 'C' && !reduce);
+        html.classList.toggle('gl-c', (v === 'C' || v === 'D') && !reduce);
+        html.classList.toggle('gl-bare', v === 'D' && !reduce);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        rearmReveals();
+      },
+    },
+    {
+      id: 'text', title: 'Typed text',
+      options: [
+        { v: 'A', label: 'Body copy types', desc: 'Paragraphs type out behind a caret; headings decode letter by letter.' },
+        { v: 'B', label: 'Headings type', desc: 'Headings and the hero eyebrow type out behind a caret; body copy glitches in.' },
+      ],
+      home: true,
+      // Replays the landing (if it's the boot sequence) and re-arms the scroll reveals.
+      play: (v) => {
+        typeHeads = v === 'B';
+        if (variants.landing === 'B') runIntroB();
         window.scrollTo({ top: 0, behavior: 'instant' });
         rearmReveals();
       },
@@ -2223,6 +2698,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     else { location.hash = '#/'; setTimeout(fn, 60); }
   }
   const labBtn = $('#labBtn'), labPanel = $('#labPanel'), labItems = $('#labItems');
+  labBtn.hidden = !window.__lab;
   function renderLab() {
     labItems.innerHTML = FEATURES.map((f) => {
       const cur = variants[f.id] || 'A';
@@ -2273,7 +2749,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   }
   function applySpeed(offset) {
     const speed = Math.max(0.1, 1 + offset);
-    SLOW = BASE_SLOW / speed;
+    SLOW = BASE_SLOW * LANDING / speed;
+    html.style.setProperty('--kl', String(LANDING / speed));
     GX = BASE_GX / speed;
     GXC = BASE_GXC / speed;
     html.style.setProperty('--k', String(1 / speed));
@@ -2281,7 +2758,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     speedOut.innerHTML = speed === 1 ? '<b>1×</b> · as designed'
       : `<b>${fmt(speed)}× speed</b> · animations take ${fmt(1 / speed)}× as long${1 + offset < 0.1 ? ' (slowest)' : ''}`;
   }
-  // With the lab hidden, a speed saved while testing is ignored so every visitor sees the default.
+  // Off localhost the lab is hidden and a saved speed is ignored, so every visitor sees the default.
   let savedSpeed = labBtn.hidden ? '' : (() => { try { return localStorage.getItem('mh-anim-speed') || ''; } catch (e) { return ''; } })();
   speedIn.value = savedSpeed;
   applySpeed(parseSpeed(savedSpeed) || 0);
@@ -2304,6 +2781,325 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   route();
   if (html.classList.contains('intro-b')) runIntroB();
   if (variants.landing === 'B') ambientStart();
+  /* ---- How I work: infographic ----
+     Six tabs, each with a live diagram. The tabs advance on their own while the section is in
+     view and nobody is using it; any click or key inside stops that for good. Each diagram also
+     runs its own small loop, but only while its panel is showing and on screen. */
+  (function howIWork() {
+    const root = $('#hw');
+    if (!root) return;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tabs = $$('.hw-tab', root), panels = $$('.hw-panel', root);
+    const TAB_MS = 9000;
+    let cur = 0, inView = false, hovering = false, userTook = false, tabT0 = 0, tabElapsed = 0;
+
+    // Stat counters count up once, when they first come into view.
+    const stats = $('.hw-stats');
+    if (!still && stats && 'IntersectionObserver' in window) {
+      const nums = $$('.hw-count', stats);
+      nums.forEach((n) => { n.textContent = '0'; });
+      const so = new IntersectionObserver((es) => {
+        if (!es.some((e) => e.isIntersecting)) return;
+        so.disconnect();
+        const t0 = performance.now(), dur = 1400;
+        const tick = (now) => {
+          const k = Math.min(1, (now - t0) / dur), ease = 1 - Math.pow(1 - k, 3);
+          nums.forEach((n) => { n.textContent = String(Math.round(+n.dataset.to * ease)); });
+          if (k < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }, { threshold: 0.6 });
+      so.observe(stats);
+    }
+
+    // Each diagram: start() when its panel shows, stop() when it hides, frame(now) per tick.
+    const viz = [ddViz(), netViz(), mpViz(), dsViz(), a11yViz(), loopViz()];
+
+    function select(i, focus) {
+      cur = (i + tabs.length) % tabs.length;
+      tabs.forEach((t, j) => {
+        const on = j === cur;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        t.style.setProperty('--p', 0);
+      });
+      panels.forEach((p, j) => { if (j !== cur && !p.hidden) { p.hidden = true; viz[j].stop?.(); } });
+      panels[cur].hidden = false;
+      viz[cur].start?.();
+      if (focus) tabs[cur].focus();
+      // Keep the chosen tab visible in the horizontal strip on small screens.
+      const strip = tabs[cur].parentElement;
+      if (strip.scrollWidth > strip.clientWidth) strip.scrollTo({ left: tabs[cur].offsetLeft - 16, behavior: still ? 'auto' : 'smooth' });
+      tabElapsed = 0; tabT0 = performance.now();
+    }
+    const takeOver = () => { if (!userTook) { userTook = true; tabs.forEach((t) => t.style.setProperty('--p', 0)); } };
+    tabs.forEach((t, i) => t.addEventListener('click', () => { takeOver(); select(i); }));
+    $('.hw-tabs', root).addEventListener('keydown', (e) => {
+      const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (d) { e.preventDefault(); takeOver(); select(cur + d, true); }
+      else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); takeOver(); select(e.key === 'Home' ? 0 : tabs.length - 1, true); }
+    });
+    $('.hw-stage', root).addEventListener('pointerdown', takeOver);
+    $('.hw-stage', root).addEventListener('keydown', takeOver);
+    root.addEventListener('pointerenter', () => { hovering = true; });
+    root.addEventListener('pointerleave', () => { hovering = false; tabT0 = performance.now() - tabElapsed; });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((es) => {
+        inView = es[0].isIntersecting;
+        if (inView) { tabT0 = performance.now() - tabElapsed; viz[cur].start?.(); } else viz[cur].stop?.();
+      }, { threshold: 0.25 }).observe(root);
+    } else inView = true;
+
+    select(0);
+    if (still) return;
+    (function loop(now) {
+      requestAnimationFrame(loop);
+      if (!inView || document.hidden) return;
+      viz[cur].frame?.(now);
+      if (userTook) return;
+      if (hovering || root.contains(document.activeElement)) { tabT0 = now - tabElapsed; return; }
+      tabElapsed = now - tabT0;
+      tabs[cur].style.setProperty('--p', Math.min(1, tabElapsed / TAB_MS));
+      if (tabElapsed >= TAB_MS) select(cur + 1);
+    })(performance.now());
+
+    /* 01: Double Diamond. The dot runs along the tops of the diamonds; the phase it's over
+       lights up. Picking a phase parks the dot there. */
+    function ddViz() {
+      const p = $('#hw-p1'), phs = $$('.dd-ph', p), labels = $$('.dd-labels text', p), chips = $$('[data-dd]', p);
+      const dot = $('.dd-dot', p), note = $('#ddNote');
+      const NOTES = [
+        '<b>Discover.</b> Go wide: research the problem with users, stakeholders and data.',
+        '<b>Define.</b> Narrow down: turn what we learned into a clear problem to solve.',
+        '<b>Develop.</b> Go wide again: sketch, wireframe and prototype options.',
+        '<b>Deliver.</b> Narrow down: test, refine and hand over for release.',
+      ];
+      let phase = -1, manual = false, t0 = 0;
+      const RUN = 8000;
+      const at = (x) => { const c = x < 320 ? 170 : 470; return 145 - 110 * Math.max(0, 1 - Math.abs(x - c) / 150); };
+      const place = (x) => { dot.setAttribute('cx', x); dot.setAttribute('cy', at(x)); };
+      function setPhase(i) {
+        if (i === phase) return;
+        phase = i;
+        phs.forEach((el, j) => el.classList.toggle('on', j === i));
+        labels.forEach((el, j) => el.classList.toggle('on', j === i));
+        chips.forEach((el, j) => el.setAttribute('aria-pressed', String(j === i)));
+        note.innerHTML = NOTES[i];
+      }
+      const pick = (i) => { manual = true; setPhase(i); place(95 + 150 * i); };
+      phs.forEach((el, i) => el.addEventListener('click', () => pick(i)));
+      chips.forEach((el, i) => el.addEventListener('click', () => pick(i)));
+      setPhase(0); place(20);
+      return {
+        start() { t0 = performance.now(); },
+        frame(now) {
+          if (manual) return;
+          const k = ((now - t0) % RUN) / RUN, x = 20 + 600 * k;
+          place(x);
+          setPhase(Math.min(3, Math.floor((x - 20) / 150)));
+        },
+      };
+    }
+
+    /* 02: Collaboration. Signals run both ways between design and each discipline; the
+       highlighted discipline cycles until you pick one. */
+    function netViz() {
+      const p = $('#hw-p2'), svgNS = 'http://www.w3.org/2000/svg', layer = $('.net-pulses', p);
+      const nodes = $$('.net-node[data-n]', p), links = $$('.net-links path', p), note = $('#netNote');
+      const END = [[120, 60], [520, 60], [120, 230], [520, 230]];
+      const NOTES = [
+        '<b>Product.</b> Leading features from request to release, with product owners from day one.',
+        '<b>Developers.</b> Technical insight and feasibility, raised early while designs can still change.',
+        '<b>QA.</b> Working alongside testers so every state and edge case is covered.',
+        '<b>Clients.</b> Client-facing solutions, shaped with the people who will use them.',
+      ];
+      let on = -1, manual = false, pulses = [], lastSpawn = 0, lastCycle = 0;
+      function setOn(i) {
+        on = i;
+        nodes.forEach((n, j) => n.classList.toggle('on', j === i));
+        links.forEach((l, j) => l.classList.toggle('on', j === i));
+        note.innerHTML = NOTES[i];
+      }
+      nodes.forEach((n, i) => {
+        n.addEventListener('click', () => { manual = true; setOn(i); });
+        n.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); manual = true; setOn(i); } });
+      });
+      setOn(0);
+      return {
+        start() { lastCycle = performance.now(); },
+        stop() { pulses.forEach((q) => q.el.remove()); pulses = []; },
+        frame(now) {
+          if (!manual && now - lastCycle > 2200) { lastCycle = now; setOn((on + 1) % 4); }
+          if (now - lastSpawn > 260) {
+            lastSpawn = now;
+            const l = Math.random() < 0.45 ? on : Math.floor(Math.random() * 4);
+            const el = document.createElementNS(svgNS, 'circle');
+            el.setAttribute('r', l === on ? 5 : 3.5);
+            if (l === on) el.classList.add('on');
+            layer.appendChild(el);
+            pulses.push({ el, l, out: Math.random() < 0.5, t0: now, dur: 900 + Math.random() * 500 });
+          }
+          pulses = pulses.filter((q) => {
+            const k = (now - q.t0) / q.dur;
+            if (k >= 1) { q.el.remove(); return false; }
+            const [ex, ey] = END[q.l], s = q.out ? k : 1 - k;
+            q.el.setAttribute('cx', 320 + (ex - 320) * s);
+            q.el.setAttribute('cy', 145 + (ey - 145) * s);
+            q.el.style.opacity = String(Math.sin(Math.PI * k));
+            return true;
+          });
+        },
+      };
+    }
+
+    /* 03: Multi-platform. One layout; the frame reshapes for each device, the rail reflows,
+       and on remote and controller devices a focus ring moves along it. */
+    function mpViz() {
+      const p = $('#hw-p3'), screen = $('.mp-screen', p), room = $('.mp-room', p), rail = $('.mp-rail', p);
+      const tiles = $$('i', rail), chips = $$('[data-dev]', p), note = $('#mpNote');
+      const DEV = [
+        { k: 'tv', ar: 16 / 9, size: 1, cols: 5, focus: true, info: 'TV · 16:9 · 10-foot UI · remote + D-pad focus' },
+        { k: 'stb', ar: 16 / 9, size: 0.9, cols: 5, focus: true, info: 'Set top box · operator remote · low-power hardware' },
+        { k: 'console', ar: 16 / 9, size: 0.95, cols: 4, focus: true, info: 'Console · controller · platform focus engine' },
+        { k: 'tablet', ar: 3 / 4, size: 1, cols: 3, focus: false, info: 'Tablet · touch · portrait and landscape' },
+        { k: 'mobile', ar: 9 / 19.5, size: 1, cols: 2, focus: false, info: 'Mobile · touch · one-handed reach' },
+        { k: 'browser', ar: 16 / 10, size: 1, cols: 4, focus: false, info: 'Browser · mouse + keyboard · responsive' },
+      ];
+      let dev = 0, manual = false, lastDev = 0, lastFocus = 0, f = 0;
+      function fit() {
+        const d = DEV[dev], W = room.clientWidth, H = room.clientHeight - (d.focus ? 22 : 4);
+        let w = Math.min(W * 0.92, 380) * d.size, h = w / d.ar;
+        if (h > H) { h = H * d.size; w = h * d.ar; }
+        screen.style.width = `${Math.round(w)}px`; screen.style.height = `${Math.round(h)}px`;
+      }
+      function setDev(i) {
+        dev = i; const d = DEV[i];
+        screen.dataset.k = d.k; rail.style.setProperty('--cols', d.cols);
+        chips.forEach((c, j) => c.setAttribute('aria-pressed', String(j === i)));
+        note.textContent = d.info;
+        tiles.forEach((t) => t.classList.remove('f'));
+        if (d.focus) { f = 0; tiles[0].classList.add('f'); }
+        fit();
+      }
+      chips.forEach((c, i) => c.addEventListener('click', () => { manual = true; setDev(i); }));
+      addEventListener('resize', () => { if (!p.hidden) fit(); });
+      setDev(0);
+      return {
+        start() { lastDev = lastFocus = performance.now(); requestAnimationFrame(fit); },
+        frame(now) {
+          if (!manual && now - lastDev > 1450) { lastDev = now; setDev((dev + 1) % DEV.length); }
+          if (DEV[dev].focus && now - lastFocus > 480) {
+            lastFocus = now;
+            tiles[f].classList.remove('f');
+            f = (f + 1) % DEV[dev].cols;
+            tiles[f].classList.add('f');
+          }
+        },
+      };
+    }
+
+    /* 04: Design system. One brand token; changing it ripples through every level. */
+    function dsViz() {
+      const p = $('#hw-p4'), host = $('.hw-ds', p), sw = $$('.hw-swatches button', p), boxes = $$('.ds-box', p), note = $('#dsNote');
+      const NAMES = ['yellow', 'blue', 'pink', 'green'];
+      let c = 0, manual = false, last = 0;
+      function setC(i, announce) {
+        c = i;
+        host.style.setProperty('--brand', sw[i].style.getPropertyValue('--c'));
+        sw.forEach((b, j) => { b.setAttribute('aria-checked', String(j === i)); b.tabIndex = j === i ? 0 : -1; });
+        if (!still) boxes.forEach((b, j) => {
+          b.classList.remove('ping');
+          setTimeout(() => { void b.offsetWidth; b.classList.add('ping'); }, j * 110);
+        });
+        if (announce) note.textContent = `color.brand → ${NAMES[i]} · 1 change, updated at every level`;
+      }
+      sw.forEach((b, i) => b.addEventListener('click', () => { manual = true; setC(i, true); }));
+      $('.hw-swatches', p).addEventListener('keydown', (e) => {
+        const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!d) return;
+        e.preventDefault(); manual = true;
+        const i = (c + d + sw.length) % sw.length; setC(i, true); sw[i].focus();
+      });
+      sw.forEach((b, j) => { b.tabIndex = j === 0 ? 0 : -1; });
+      return {
+        start() { last = performance.now(); },
+        frame(now) { if (!manual && now - last > 2200) { last = now; setC((c + 1) % sw.length, true); } },
+      };
+    }
+
+    /* 05: Accessibility. A live WCAG contrast check on a fixed dark card, plus colour-vision
+       simulation over the whole sample. It plays a short demo sweep the first time it shows. */
+    function a11yViz() {
+      const p = $('#hw-p5'), range = $('#a11yRange'), card = $('.a11y-card', p), ratio = $('#a11yRatio');
+      const badges = $$('.a11y-badges span', p), chips = $$('[data-cvd]', p), sample = $('#a11ySample');
+      const BG = [0x12, 0x14, 0x16];
+      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+      let demo = null, played = false;
+      function paint() {
+        const v = Math.round(+range.value * 2.55), fg = [v, v, v];
+        card.style.setProperty('--fg', `rgb(${v} ${v} ${v})`);
+        const a = lum(fg), b = lum(BG), r = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        ratio.textContent = r.toFixed(2);
+        badges.forEach((el) => el.classList.toggle('ok', r >= +el.dataset.min));
+      }
+      range.addEventListener('input', () => { demo = null; played = true; paint(); });
+      chips.forEach((ch) => ch.addEventListener('click', () => {
+        chips.forEach((c) => c.setAttribute('aria-pressed', String(c === ch)));
+        sample.style.filter = ch.dataset.cvd ? `url(#cvd-${ch.dataset.cvd})` : '';
+      }));
+      paint();
+      return {
+        start() { if (!played && !still) { played = true; demo = { t0: performance.now() + 500, from: 22, to: 60 }; range.value = 22; paint(); } },
+        stop() { if (demo) { range.value = demo.to; demo = null; paint(); } },
+        frame(now) {
+          if (!demo) return;
+          const k = Math.max(0, Math.min(1, (now - demo.t0) / 2400)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          range.value = Math.round(demo.from + (demo.to - demo.from) * e); paint();
+          if (k >= 1) demo = null;
+        },
+      };
+    }
+
+    /* 06: Usability testing. A dot laps the loop; each stop lights as it passes, and the round
+       count goes up every lap. Picking a stop holds the dot there for a few seconds. */
+    function loopViz() {
+      const p = $('#hw-p6'), orbit = $('.loop-orbit', p), arc = $('.loop-arc', p), stops = $$('.loop-stop', p);
+      const round = $('#loopRound'), note = $('#loopNote');
+      const LAP = 10000;
+      const NOTES = [
+        '<b>Script.</b> Write a script that guides participants through a series of tasks.',
+        '<b>Prototype.</b> Build a prototype real enough to test the decision in question.',
+        '<b>Test.</b> Facilitate the sessions and watch where people hesitate.',
+        '<b>Findings.</b> Investigate concerns and identify areas for improvement.',
+        '<b>Iterate.</b> Refine the design, then validate it again.',
+      ];
+      let t = 0, last = 0, hold = 0, active = -1;
+      function show(deg) {
+        orbit.style.transform = `rotate(${deg}deg)`;
+        arc.style.strokeDashoffset = String(100 - (deg / 360) * 100);
+        const i = Math.round(deg / 72) % 5, near = Math.abs(deg - Math.round(deg / 72) * 72) < 24;
+        if (near && i !== active) {
+          active = i;
+          stops.forEach((s, j) => s.classList.toggle('on', j === i));
+          note.innerHTML = NOTES[i];
+        }
+      }
+      stops.forEach((s, i) => s.addEventListener('click', () => { t = Math.floor(t / LAP) * LAP + i * LAP / 5; hold = performance.now() + 4000; show(i * 72); }));
+      show(0);
+      return {
+        start() { last = performance.now(); },
+        frame(now) {
+          const dt = now - last; last = now;
+          if (now < hold) return;
+          t += Math.min(dt, 100);
+          round.textContent = String(1 + Math.floor(t / LAP));
+          show(((t % LAP) / LAP) * 360);
+        },
+      };
+    }
+  })();
 })();
 </script>
 </body>
