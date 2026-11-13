@@ -4,3 +4,6 @@ source/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Local Claude app settings (preview server config)
+.claude/
