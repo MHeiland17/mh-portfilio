@@ -663,6 +663,12 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 @media (min-width: 761px) {
   .gallery-spaced { width: 75vw; margin-left: calc(50% - 37.5vw); }
 }
+/* Phones: the header keeps a 16px gutter, and the artworks sit 8px apart and 8px in from the
+   screen edges (pulled out of the column's wider gutter). */
+@media (max-width: 760px) {
+  [data-route="illustrations"] .case-hero { padding-left: 16px; padding-right: 16px; }
+  .gallery-spaced { gap: 8px; margin-left: calc(8px - var(--gutter)); margin-right: calc(8px - var(--gutter)); }
+}
 .ill-note { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 5vw, 80px); align-items: start; margin: clamp(64px, 9vw, 120px) 0; }
 .ill-note h2 { font-size: clamp(30px, 4vw, 48px); margin-top: 14px; }
 .ill-note p { color: var(--text-2); font-size: 18px; }
