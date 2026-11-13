@@ -14,10 +14,11 @@
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
 <script>
-  // A/B variations are read before first paint, so variant B's landing can hide the hero
-  // without a flash of the finished page.
+  // The chosen variations: landing B ("boot sequence") and scroll C ("clean scan").
+  // Set before first paint, so the landing can hide the hero without a flash of the
+  // finished page. The A/B lab is hidden, so saved choices from it are no longer read.
   (function () {
-    var v = {}; try { v = JSON.parse(localStorage.getItem('mh-variants') || '{}'); } catch (e) {}
+    var v = { landing: 'B', scroll: 'C' };
     window.__variants = v;
     var home = !location.hash || location.hash === '#/' || location.hash === '#';
     var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -373,6 +374,7 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .lab-btn[aria-expanded='true'] { transform: rotate(-12deg) scale(.94); }
 .lab-btn .dot { position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; border-radius: 999px; background: #ff4d6d; border: 2px solid var(--bg); display: none; }
 .lab-btn.has-b .dot { display: block; }
+.lab-btn[hidden] { display: none; }
 .lab-panel { position: fixed; right: 20px; bottom: 88px; z-index: 60; width: min(360px, calc(100vw - 32px)); max-height: calc(100svh - 120px); overflow: auto;
   background: color-mix(in srgb, var(--bg-2) 92%, transparent); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3);
   border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
@@ -1341,8 +1343,9 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   <div class="wrap mono"><span>© <span id="year">2026</span> Marek Heiland</span><span>Sydney, Australia</span></div>
 </footer>
 
-<!-- A/B lab: a floating button that opens the page variations -->
-<button class="lab-btn" id="labBtn" aria-label="Page variations" aria-expanded="false" aria-controls="labPanel">
+<!-- A/B lab: a floating button that opens the page variations. Hidden now that the
+     variations are chosen; remove the hidden attribute to bring it back. -->
+<button class="lab-btn" id="labBtn" hidden aria-label="Page variations" aria-expanded="false" aria-controls="labPanel">
   <i class="ph-fill ph-test-tube" aria-hidden="true"></i><span class="dot"></span>
 </button>
 <div class="lab-panel" id="labPanel" role="dialog" aria-labelledby="labTitle" hidden>
@@ -1964,7 +1967,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     speedOut.innerHTML = speed === 1 ? '<b>1×</b> · as designed'
       : `<b>${fmt(speed)}× speed</b> · animations take ${fmt(1 / speed)}× as long${1 + offset < 0.1 ? ' (slowest)' : ''}`;
   }
-  let savedSpeed = ''; try { savedSpeed = localStorage.getItem('mh-anim-speed') || ''; } catch (e) {}
+  // With the lab hidden, a speed saved while testing is ignored so every visitor sees the default.
+  let savedSpeed = labBtn.hidden ? '' : (() => { try { return localStorage.getItem('mh-anim-speed') || ''; } catch (e) { return ''; } })();
   speedIn.value = savedSpeed;
   applySpeed(parseSpeed(savedSpeed) || 0);
   speedIn.addEventListener('input', () => {
