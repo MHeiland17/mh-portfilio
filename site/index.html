@@ -205,14 +205,19 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
     padding: 16px var(--gutter) 28px; justify-content: space-between; }
   .hero-foot::before { content: ''; position: absolute; top: 0; left: var(--gutter); right: var(--gutter); height: 1px; background: rgba(255,255,255,.18); }
 }
-/* Phones: a bigger two-line heading, and the buttons as a full-width primary over an even row of three. */
+/* The contact row that follows the hero is for phones only. */
+.hero-contact { display: none; }
+/* Phones: a bigger two-line heading; the hero offers Work and Illustrations side by side,
+   and E-mail, LinkedIn and CV move to an even row of three just under the hero. */
 @media (max-width: 600px) {
   .hero h1 { font-size: 17vw; margin: 14px 0 20px; }
   .hero .eyebrow { font-size: 11px; letter-spacing: .05em; }
   .hero-intro { margin-bottom: 24px; }
-  .hero .btn-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .hero .btn-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .hero .btn-row .btn { justify-content: center; padding: 0 10px; }
-  .hero .btn-row .btn.primary { grid-column: 1 / -1; }
+  .hero .btn-row .btn.d-only { display: none; }
+  .hero-contact { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 16px; padding-bottom: 16px; }
+  .hero-contact .btn { justify-content: center; padding: 0 10px; }
 }
 
 /* ---------- Sections ---------- */
@@ -1013,10 +1018,11 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
         <p data-intro="1">I'm a designer and an illustrator based in Sydney. I've worked as a Product Designer for 12 years. Acquiring extensive experience in creating multi-platform software.</p>
       </div>
       <div class="btn-row">
-        <a class="btn primary" href="#/work" data-intro="1">See the work <svg><use href="#i-arrow"/></svg></a>
-        <a class="btn glass" href="mailto:marekheiland@gmail.com" data-intro="1"><svg><use href="#i-mail"/></svg>E-mail</a>
-        <a class="btn glass" href="https://www.linkedin.com/in/marek-heiland-48b8a0b9" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-in"/></svg>LinkedIn</a>
-        <a class="btn glass" href="files/CV.pdf" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-doc"/></svg>CV</a>
+        <a class="btn primary" href="#/work" data-intro="1">UX &amp; UI Work</a>
+        <a class="btn glass" href="#/illustrations" data-intro="1">Illustrations</a>
+        <a class="btn glass d-only" href="mailto:marekheiland@gmail.com" data-intro="1"><svg><use href="#i-mail"/></svg>E-mail</a>
+        <a class="btn glass d-only" href="https://www.linkedin.com/in/marek-heiland-48b8a0b9" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-in"/></svg>LinkedIn</a>
+        <a class="btn glass d-only" href="files/CV.pdf" target="_blank" rel="noopener" data-intro="1"><svg><use href="#i-doc"/></svg>CV</a>
       </div>
     </div>
     <div class="hero-foot" data-intro="soft">
@@ -1024,6 +1030,11 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       <div class="hero-dots" id="heroDots"></div>
     </div>
   </section>
+  <div class="wrap btn-row hero-contact">
+    <a class="btn" href="mailto:marekheiland@gmail.com"><svg><use href="#i-mail"/></svg>E-mail</a>
+    <a class="btn" href="https://www.linkedin.com/in/marek-heiland-48b8a0b9" target="_blank" rel="noopener"><svg><use href="#i-in"/></svg>LinkedIn</a>
+    <a class="btn" href="files/CV.pdf" target="_blank" rel="noopener"><svg><use href="#i-doc"/></svg>CV</a>
+  </div>
 
   <section class="section" id="work">
     <div class="wrap idx-split">
@@ -2842,7 +2853,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     // each framed and glitched in.
     const order = [
       ...$$('#header [data-intro]').filter((el) => el.offsetParent !== null),
-      ...$$('.hero [data-intro]'),
+      ...$$('.hero [data-intro]').filter((el) => el.offsetParent !== null),
     ];
     // The hero copy and buttons wait until a second (real time) after the slide cycle lands.
     const heroStart = 1000 + HOLD + CYCLE_DELAY + cycleLen + 1000 / SLOW;
