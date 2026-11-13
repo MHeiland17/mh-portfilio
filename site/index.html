@@ -1893,7 +1893,24 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     u._parts.forEach((p, i) => at(start + i * step, () => {
       p.classList.add('in');
       if (p.matches('h1, h2, h3')) scramble(p, 600 * GXC, () => true);
+      if (p.classList.contains('gx-m')) colourFlicker(p);
     }));
+  }
+
+  // An image starts in grayscale and its colour flickers on at random moments, settling into
+  // full colour within 1.5s. Each flick is a hard cut; later grey flicks are fainter.
+  function colourFlicker(p) {
+    if (reduce || !p.animate) return;
+    const dur = rnd(1000, 1500) * GXC;
+    const cut = 'steps(1, end)';
+    const ks = [{ offset: 0, filter: 'grayscale(1)', easing: cut }];
+    const flicks = (3 + Math.random() * 4 | 0) * 2;
+    Array.from({ length: flicks }, () => rnd(0.05, 0.92)).sort((a, b) => a - b).forEach((o, i) => {
+      const g = i % 2 ? 0.55 + 0.45 * (1 - o) : rnd(0, 0.3); // odd: back to grey, even: colour
+      ks.push({ offset: o, filter: `grayscale(${g.toFixed(2)})`, easing: cut });
+    });
+    ks.push({ offset: 1, filter: 'grayscale(0)' });
+    p.animate(ks, { duration: dur, fill: 'backwards' });
   }
 
   // A scan line sweeping down an image as it comes in.
