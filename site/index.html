@@ -190,6 +190,8 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
   background:
     linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 70%),
     linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,.15) 45%, rgba(0,0,0,.85) 100%); }
+.hero { cursor: pointer; }
+.hero-content p, .hero-content h1, .hero-content .eyebrow, .hero-foot .mono { cursor: auto; }
 .hero-content { position: relative; z-index: 2; padding-bottom: clamp(40px, 8vh, 96px); padding-top: 120px; }
 .hero h1 { font-size: clamp(48px, 9vw, 128px); font-weight: 650; letter-spacing: -0.045em; line-height: .92; margin: 18px 0 26px; }
 .hero h1 span { color: var(--accent); }
@@ -530,6 +532,11 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
 .strip img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .8s; }
 .strip a:hover img { transform: scale(1.04); }
 @keyframes strip-loop { to { transform: translateX(-50%); } }
+/* Driven by script (drag, swipe, momentum): the CSS loop is off, vertical page swipes still work. */
+.strip.js-drive { touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.strip.js-drive .strip-track { animation: none; will-change: transform; }
+.strip.js-drive.dragging { cursor: grabbing; }
+.strip.js-drive.dragging a { pointer-events: none; }
 @media (max-width: 760px) { .strip { --strip-w: 82vw; } }
 @media (prefers-reduced-motion: reduce) {
   .strip { overflow-x: auto; scrollbar-width: thin; }
@@ -2136,6 +2143,30 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   const onScroll = () => header.classList.toggle('solid', window.scrollY > 40 || nav.classList.contains('open'));
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* ---- Deep links to one artwork: #/illustrations/<file name without extension> ---- */
+  const artSlug = (src) => (src || '').split('/').pop().replace(/\.[^.]+$/, '');
+  const artHref = (src) => `#/illustrations/${encodeURIComponent(artSlug(src))}`;
+  // Scrolls the Illustrations page to a piece. The images above it are lazy and mostly have no
+  // size until they load, so load them now and keep the piece centred as each one lands, until
+  // they are all in or the visitor starts scrolling themselves.
+  function scrollToArt(slug) {
+    const links = $$('#gallery1 a, #gallery2 a');
+    const target = links.find((a) => artSlug(a.getAttribute('href')).toLowerCase() === slug.toLowerCase());
+    if (!target) { window.scrollTo({ top: 0, behavior: 'instant' }); return; }
+    const before = links.slice(0, links.indexOf(target) + 1).map((a) => $('img', a));
+    before.forEach((img) => { img.loading = 'eager'; });
+    let live = true;
+    const stop = () => { live = false; ['wheel', 'touchstart', 'keydown'].forEach((t) => removeEventListener(t, stop)); };
+    ['wheel', 'touchstart', 'keydown'].forEach((t) => addEventListener(t, stop, { passive: true }));
+    const align = () => { if (live) target.scrollIntoView({ block: 'center', behavior: 'instant' }); };
+    align();
+    Promise.all(before.map((img) => img.complete ? null : new Promise((r) => {
+      img.addEventListener('load', () => { align(); r(); }, { once: true });
+      img.addEventListener('error', r, { once: true });
+    }))).then(() => { align(); stop(); });
+    setTimeout(stop, 8000);
+  }
+
   /* ---- Home illustration strip: every gallery piece, shuffled, looping forever ---- */
   (() => {
     const track = $('#artStrip .strip-track');
@@ -2152,7 +2183,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const item = (img, copy) => {
       const a = document.createElement('a');
-      a.href = '#/illustrations';
+      a.href = artHref(img.getAttribute('src'));
       const im = document.createElement('img');
       im.src = img.getAttribute('src');
       im.alt = copy ? '' : `Illustration: ${img.alt}`;
@@ -2166,9 +2197,76 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     track.append(...pieces.map((p) => item(p, false)));
     if (!still) {
       track.append(...pieces.map((p) => item(p, true)));
-      track.style.setProperty('--strip-dur', `${pieces.length * 15}s`);
+      driveStrip(track, pieces.length * 15);
     }
   })();
+
+  // The strip's motion: it drifts left at one piece per 15s, and can be dragged or swiped.
+  // A fling keeps its speed and eases back to the drift, and hovering (until a fling) holds it still.
+  function driveStrip(track, loopSecs) {
+    const strip = track.parentElement;
+    strip.classList.add('js-drive');
+    $$('a', track).forEach((a) => { a.draggable = false; $('img', a).draggable = false; });
+    const EASE = 0.7;     // seconds for the speed to close most of the gap back to the drift
+    let half = 0, drift = 0, x = 0, v = 0, last = 0, raf = 0;
+    let hover = false, flung = false, drag = null, swallowClick = false;
+    const measure = () => { half = track.scrollWidth / 2; drift = -half / loopSecs; };
+    const wrap = () => { if (half) x = x - half * Math.floor(x / half) - half; };
+    const paint = () => { track.style.transform = `translate3d(${x}px,0,0)`; };
+    const frame = (t) => {
+      const dt = Math.min((t - (last || t)) / 1000, 0.05);
+      last = t;
+      if (!drag) {
+        const target = hover && !flung ? 0 : drift;
+        v += (target - v) * (1 - Math.exp(-dt / EASE));
+        x += v * dt; wrap(); paint();
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    new ResizeObserver(measure).observe(track);
+    measure(); v = drift;
+    // Only animate while the strip is on screen.
+    new IntersectionObserver(([e]) => {
+      cancelAnimationFrame(raf); last = 0;
+      if (e.isIntersecting) raf = requestAnimationFrame(frame);
+    }).observe(strip);
+
+    strip.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hover = true; });
+    strip.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hover = false; flung = false; } });
+    strip.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, start: x, moved: false, pts: [[e.timeStamp, e.clientX]] };
+      swallowClick = false;
+    });
+    strip.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0;
+      if (!drag.moved) {
+        // Mostly vertical on touch: let the page scroll instead.
+        if (Math.abs(e.clientY - drag.y0) > Math.abs(dx) && Math.abs(e.clientY - drag.y0) > 6) { drag = null; return; }
+        if (Math.abs(dx) < 6) return;
+        drag.moved = true; strip.setPointerCapture(e.pointerId); strip.classList.add('dragging');
+      }
+      x = drag.start + dx; wrap(); paint();
+      drag.pts.push([e.timeStamp, e.clientX]);
+      while (drag.pts.length > 2 && e.timeStamp - drag.pts[0][0] > 100) drag.pts.shift();
+    });
+    const end = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (drag.moved) {
+        const [t0, x0] = drag.pts[0], [t1, x1] = drag.pts[drag.pts.length - 1];
+        // A pause before letting go means no fling.
+        v = t1 > t0 && e.timeStamp - t1 < 80 ? Math.max(-6000, Math.min(6000, (x1 - x0) / (t1 - t0) * 1000)) : 0;
+        flung = true; swallowClick = true;
+        strip.classList.remove('dragging');
+      }
+      drag = null;
+    };
+    strip.addEventListener('pointerup', end);
+    strip.addEventListener('pointercancel', end);
+    // A drag that ends over a piece shouldn't open it.
+    strip.addEventListener('click', (e) => { if (swallowClick) { e.preventDefault(); e.stopPropagation(); swallowClick = false; } }, true);
+  }
 
   /* ---- Scroll-in reveals ---- */
   // Units are what the scroll observer watches. In case studies, runs of consecutive text are
@@ -2263,7 +2361,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   function route() {
     // Only "#/..." hashes are routes; others (like the skip link's #main) are plain anchors.
     if (location.hash && !location.hash.startsWith('#/')) return;
-    const hash = location.hash.replace(/^#\/?/, '');
+    let hash = location.hash.replace(/^#\/?/, '');
+    // #/illustrations/<piece> opens the Illustrations page scrolled to that piece.
+    let art = null;
+    if (hash.startsWith('illustrations/')) { art = decodeURIComponent(hash.slice(14)); hash = 'illustrations'; }
     // In-page anchors on home (#/work, #/about, #/contact) and plain #ids used by the skip link.
     const anchors = { work: 'work', projects: 'projects', about: 'about', contact: 'contact' };
     let name = hash, anchor = null;
@@ -2281,6 +2382,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     if (name !== 'home' && introRunning) cancelIntro();
     buildToc(page);
     if (anchor) requestAnimationFrame(() => document.getElementById(anchor).scrollIntoView({ behavior: 'smooth' }));
+    else if (art) scrollToArt(art);
     else window.scrollTo({ top: 0, behavior: 'instant' });
     units.forEach((u) => { if (page.contains(u) && u.getBoundingClientRect().top < innerHeight) revealNow(u); });
     onScroll();
@@ -2324,6 +2426,11 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     $('#heroLabel').textContent = labels[cur];
     onSlide?.(cur);
   }
+  // Clicking the artwork behind the hero (anywhere but its text and buttons) opens that piece.
+  $('.hero').addEventListener('click', (e) => {
+    if (e.target.closest('a, button, p, h1, .eyebrow, .mono') || String(getSelection())) return;
+    location.hash = artHref(slides[cur].getAttribute('src'));
+  });
   function restart() {
     clearInterval(timer); nextSlideAt = Infinity;
     if (!reduce && !document.hidden && !introRunning) { timer = setInterval(() => show(cur + 1), SLIDE_MS); nextSlideAt = performance.now() + SLIDE_MS; }
