@@ -2966,16 +2966,25 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   }
   // A bit flickers out, unless it's a target still micro-scanning or only just locked: that
   // one finishes its scan and stays up a beat (d._safeUntil) before it goes.
-  function releaseBit(d) {
-    const wait = (d._safeUntil || 0) - performance.now();
+  // force (a slide change) skips the wait.
+  function releaseBit(d, force = false) {
+    const wait = force ? 0 : (d._safeUntil || 0) - performance.now();
     if (wait > 0) { setTimeout(() => releaseBit(d), wait); return; }
     if (!d.isConnected || d.classList.contains('release')) return;
     d.classList.remove('hold'); d.classList.add('release');
     setTimeout(() => d.remove(), 400);
   }
+  // A locked hero target stays up at least this long (scaled by the panel's speed), unless the
+  // slide changes first.
+  const LOCK_MIN = 3000;
+  // A slide change releases every image target at once, protected or not: they belong to the
+  // old image.
   onSlide = () => {
-    if (ambScans === 'A' || !ambHeld.length) return;
-    releaseHeld();
+    if (ambScans === 'A') return;
+    const tgts = [...ambFx.children].filter((d) => d._box);
+    if (!tgts.length) return;
+    ambHeld = ambHeld.filter((d) => !d._box);
+    tgts.forEach((d) => releaseBit(d, true));
     if (ambOn && !introRunning) ambientNext(rnd(1200, 2000) * ambK());
   };
   function ambientBurst() {
@@ -3158,9 +3167,9 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     d._poi = p.i;
     Object.assign(d, { _box: p.box, _img: p.img, _meta: p.meta });
     trackTargets();
-    // C: a scan that couldn't finish (2s) and show (1.5s) before the slide changes doesn't start;
-    // a quick crosshair goes there instead, or nothing, for the burst's held bit.
-    const late = ambScans === 'C' && nextSlideAt - performance.now() < 3500 * ambK();
+    // A target that couldn't scan (C: 2s), lock and stay up its 3s before the slide changes
+    // doesn't start; a quick crosshair goes there instead, or nothing, for the burst's held bit.
+    const late = nextSlideAt - performance.now() < ((ambScans === 'C' ? 2000 : 0) + LOCK_MIN + 300) * ambK();
     if (late && hold) return;
     if (late || (!hold && Math.random() < .5)) {
       // A quick crosshair on its centre.
@@ -3178,16 +3187,16 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const obs = obstacles(d), tag = d.querySelector('.tag');
       ambFx.appendChild(d);
       placeBest(ambScans === 'C' ? TAG_POS_DIAG : TAG_POS, (pos) => { d.dataset.pos = pos; return clash(rectIn(tag), obs); });
-      if (ambScans === 'C') {
-        // The micro-scan comes first, so a short-lived target stays up that much longer.
-        const scanMs = microScan(d, p);
-        if (!hold) {
-          // A short-lived target: on like a held one (no flicker-out timed to its life), then
-          // released a second or so after it locks.
-          d.classList.add('hold');
-          setTimeout(() => releaseBit(d), scanMs + rnd(900, 1500) * ambK());
-          return;
-        }
+      // C micro-scans first. Either way, once locked the target stays up at least LOCK_MIN:
+      // nothing releases it before then except a slide change (see onSlide).
+      const k = ambK(), scanMs = ambScans === 'C' ? microScan(d, p) : 0;
+      d._safeUntil = performance.now() + scanMs + LOCK_MIN * k;
+      if (!hold) {
+        // A short-lived target: on like a held one (no flicker-out timed to its life), then
+        // released 3–3.8s after it locks.
+        d.classList.add('hold');
+        setTimeout(() => releaseBit(d), scanMs + rnd(LOCK_MIN, LOCK_MIN + 800) * k);
+        return;
       }
     }
     holdOrExpire(d, hold, life);
