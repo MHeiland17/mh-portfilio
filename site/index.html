@@ -894,6 +894,12 @@ html.intro-b [data-intro].in.tw, html.gl-b .gx-p.in.tw, html.gl-c .gx-p.in.tw { 
 .hud.tgt .mtri svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hud.tgt .mtick { position: absolute; width: 4px; height: 4px; margin: -2px 0 0 -2px; background: currentColor;
   animation: hud-out calc(.6s * var(--k)) steps(1, end) forwards; }
+/* Illustrations page on mobile: a much smaller micro-scan triangle and ticks. */
+@media (max-width: 760px) {
+  .ill-fx .hud.tgt .mtri { width: 12px; height: 9px; margin: -4.5px 0 0 -6px; }
+  .ill-fx .hud.tgt .mtri path { vector-effect: non-scaling-stroke; }
+  .ill-fx .hud.tgt .mtick { width: 2px; height: 2px; margin: -1px 0 0 -1px; }
+}
 .hud.tgt.snap .c { animation: tgt-lock calc(.24s * var(--k)) steps(3, end) both; }
 .hud.tgt.snap .c.tl { --lx: -12px; --ly: -12px; }
 .hud.tgt.snap .c.tr { --lx: 12px; --ly: -12px; }
@@ -3120,9 +3126,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   }
   // C: before locking on, a small triangle hops across 5–6 points inside the target (the last
   // near its centre), leaving fading ticks; then the brackets snap in and the tag follows.
-  function microScan(d, p) {
+  // `short` (the Illustrations page on mobile): 4 hops over 1.1s, and a shorter protected beat.
+  function microScan(d, p, short = false) {
     // 5–6 hops spread over about 2s (330–400ms each), so it reads as a deliberate sweep.
-    const k = ambK(), n = 5 + (Math.random() * 2 | 0), TOTAL = 2000;
+    const k = ambK(), n = short ? 4 : 5 + (Math.random() * 2 | 0), TOTAL = short ? 1100 : 2000;
     // Uneven spacing: each gap is ±35% of even. Rarely (1 in 5 scans) three hops come in a
     // quick run, 80–110ms apart; the other gaps stretch so the scan still lasts about 2s.
     const gaps = Array.from({ length: n }, () => rnd(.65, 1.35));
@@ -3149,12 +3156,12 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
         const t = document.createElement('span'); t.className = 'mtick';
         t.style.left = x * 100 + '%'; t.style.top = y * 100 + '%';
         d.appendChild(t);
-        setTimeout(() => t.remove(), 700 * k);
+        setTimeout(() => t.remove(), (short ? 450 : 700) * k);
       }, at[i] * k);
     }
     setTimeout(() => { tri.remove(); d.classList.remove('pre'); d.classList.add('snap'); }, TOTAL * k);
     // Once started, the scan is protected: nothing releases it until a beat after it locks.
-    d._safeUntil = performance.now() + (TOTAL + 1200) * k;
+    d._safeUntil = performance.now() + (TOTAL + (short ? 600 : 1200)) * k;
     return TOTAL * k;
   }
 
@@ -3188,16 +3195,39 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   function illStart(a) {
     let s = illState.get(a);
     if (!s) {
-      s = { fx: document.createElement('div'), held: [], timer: 0, on: false };
-      s.fx.className = 'intro-fx ambient-fx';
+      s = { fx: document.createElement('div'), held: [], timer: 0, on: false, since: 0 };
+      s.fx.className = 'intro-fx ambient-fx ill-fx';
       a.appendChild(s.fx);
       illState.set(a, s);
     }
     if (s.on) return;
     s.on = true;
-    // Scanning starts once the piece has stayed in view for 2 seconds.
+    s.since = performance.now();
     clearTimeout(s.timer);
+    if (mobileMQ.matches) { illMobKick(); return; }
+    // Scanning starts once the piece has stayed in view for 2 seconds.
     s.timer = setTimeout(() => illBurst(a), ILL_DELAY * ambK());
+  }
+  /* On mobile one scheduler runs the whole page instead of one per piece: each burst picks one
+     piece at random from those that have been in view for 2s, clears every other target on the
+     page, and runs a single short-lived target there. So only one artwork shows a scan at a
+     time, and the next can land on a different one. */
+  let illMobTimer = 0;
+  function illMobKick(ms = ILL_DELAY * ambK()) {
+    if (!illMobTimer) illMobTimer = setTimeout(illMobBurst, ms);
+  }
+  function illMobBurst() {
+    illMobTimer = 0;
+    const k = ambK(), now = performance.now();
+    const live = [...illState].filter(([, s]) => s.on);
+    if (!live.length) return;   // the next piece to come into view kicks it again
+    const ready = live.filter(([, s]) => now - s.since >= ILL_DELAY * k);
+    if (document.hidden || !ready.length) { illMobKick(500); return; }
+    const [a, s] = pick(ready);
+    illState.forEach((o) => { o.held = []; [...o.fx.children].forEach((d) => d.classList.contains('tgt') ? releaseBit(d) : d.remove()); });
+    // Let the last target finish flickering out before the new one appears.
+    setTimeout(() => s.on && illTarget(a, s, false), 450);
+    illMobKick(rnd(3500, 6000) * k);
   }
   function illStop(a) {
     const s = illState.get(a);
@@ -3209,6 +3239,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
   function illBurst(a) {
     const s = illState.get(a);
     if (!s || !s.on) return;
+    if (mobileMQ.matches) { illMobKick(); return; }
     const k = ambK();
     if (document.hidden) { s.timer = setTimeout(() => illBurst(a), 1500); return; }
     while (s.held.length > 1) releaseBit(s.held.shift());
@@ -3250,10 +3281,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       }
     }
     if (!p) return;
-    const k = ambK(), d = document.createElement('div');
+    const k = ambK(), d = document.createElement('div'), mob = mobileMQ.matches;
     Object.assign(d.style, { left: p.l + 'px', top: p.t + 'px', width: p.w + 'px', height: p.h + 'px' });
     d._poi = p.i;
-    if (!hold && Math.random() < .35) {
+    if (!mob && !hold && Math.random() < .35) {
       // A quick crosshair on its centre.
       const life = rnd(600, 1200) * k;
       d.className = 'hud tgt quick';
@@ -3264,7 +3295,8 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       return;
     }
     d.className = 'hud tgt';
-    d.style.setProperty('--wl', Math.round(rnd(24, 60)) + 'px');
+    // On mobile the leader to the label is much shorter.
+    d.style.setProperty('--wl', Math.round(mob ? rnd(10, 18) : rnd(24, 60)) + 'px');
     const label = p.i >= 0 ? `${p.name} ${String(p.i + 1).padStart(2, '0')}` : `${p.name} ${String(rnd(1, 99) | 0).padStart(2, '0')}`;
     d.innerHTML = '<i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><span class="sc"></span>'
       + `<span class="tag"><span class="wire"></span><span class="tx"><b>${label}</b><small>${pick(READ[p.kind]())}</small></span></span>`;
@@ -3276,10 +3308,10 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       const area = (b.r - b.l) * (b.b - b.t);
       return busy.reduce((acc, o) => acc + overlap(b, o), 0) + (area - overlap(b, view)) * 2;
     });
-    const scanMs = microScan(d, p);
+    const scanMs = microScan(d, p, mob);
     d.classList.add('hold');
     if (hold) s.held.push(d);
-    else setTimeout(() => releaseBit(d), scanMs + rnd(900, 1500) * k);
+    else setTimeout(() => releaseBit(d), scanMs + (mob ? rnd(700, 1100) : rnd(900, 1500)) * k);
   }
   illEnable(illScans === 'B');
 
