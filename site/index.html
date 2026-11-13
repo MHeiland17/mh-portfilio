@@ -27,7 +27,7 @@
     var lab = location.protocol === 'file:' || host === 'localhost' || host === '[::1]' || /\.localhost$/.test(host)
       || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
     window.__lab = lab;
-    var v = { landing: 'B', scroll: 'D', text: 'B', illscans: 'B' };
+    var v = { landing: 'B', scroll: 'D', text: 'B', scans: 'C', illscans: 'B' };
     if (lab) try { var saved = JSON.parse(localStorage.getItem('mh-variants') || '{}'); for (var k in saved) v[k] = saved[k]; } catch (e) {}
     window.__variants = v;
     var home = !location.hash || location.hash === '#/' || location.hash === '#';
