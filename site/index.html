@@ -190,8 +190,8 @@ body.on-hero .site-header:not(.solid) .icon-btn { border-color: rgba(255,255,255
   background:
     linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 70%),
     linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,.15) 45%, rgba(0,0,0,.85) 100%); }
-.hero { cursor: pointer; }
-.hero-content p, .hero-content h1, .hero-content .eyebrow, .hero-foot .mono { cursor: auto; }
+.hero-label { color: inherit; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: color .2s, text-decoration-color .2s; }
+.hero-label:hover, .hero-label:focus-visible { color: #fff; text-decoration-color: currentColor; }
 .hero-content { position: relative; z-index: 2; padding-bottom: clamp(40px, 8vh, 96px); padding-top: 120px; }
 .hero h1 { font-size: clamp(48px, 9vw, 128px); font-weight: 650; letter-spacing: -0.045em; line-height: .92; margin: 18px 0 26px; }
 .hero h1 span { color: var(--accent); }
@@ -1038,7 +1038,7 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
       </div>
     </div>
     <div class="hero-foot" data-intro="soft">
-      <span class="mono" id="heroLabel">004 · Facility</span>
+      <a class="mono hero-label" id="heroLabel" href="#/illustrations/04-FACILITY">004 · Facility</a>
       <div class="hero-dots" id="heroDots"></div>
     </div>
   </section>
@@ -2423,14 +2423,12 @@ html.gl-b .gx-u.in .card, html.gl-c .gx-u.in .card { opacity: 1; }
     cur = (i + slides.length) % slides.length;
     slides.forEach((s, j) => s.classList.toggle('on', j === cur));
     $$('button', dots).forEach((d, j) => d.classList.toggle('on', j === cur));
-    $('#heroLabel').textContent = labels[cur];
+    const label = $('#heroLabel');
+    label.textContent = labels[cur];
+    // The slide's name links to that piece on the Illustrations page.
+    label.href = artHref(slides[cur].getAttribute('src'));
     onSlide?.(cur);
   }
-  // Clicking the artwork behind the hero (anywhere but its text and buttons) opens that piece.
-  $('.hero').addEventListener('click', (e) => {
-    if (e.target.closest('a, button, p, h1, .eyebrow, .mono') || String(getSelection())) return;
-    location.hash = artHref(slides[cur].getAttribute('src'));
-  });
   function restart() {
     clearInterval(timer); nextSlideAt = Infinity;
     if (!reduce && !document.hidden && !introRunning) { timer = setInterval(() => show(cur + 1), SLIDE_MS); nextSlideAt = performance.now() + SLIDE_MS; }
